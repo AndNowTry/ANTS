@@ -4,11 +4,13 @@ import { authStore } from "@/stores/auth.js"
 import { useTheme } from "vuetify/framework"
 import axios from "@/axios/axios.js"
 
-import LoginDialog from "@/components/auth/LoginDialog.vue"
-import RegisterDialog from "@/components/auth/RegisterDialog.vue"
+import LoginDialog from "@/components/LoginDialog.vue"
+import RegisterDialog from "@/components/RegisterDialog.vue"
 
-import Header from "@/components/app/header/Header.vue"
-import Sidebar from "@/components/app/sidebar/Sidebar.vue"
+import Header from "@/components/Header.vue"
+import Footer from "@/components/Footer.vue"
+import ProfileSidebar from "@/components/ProfileSidebar.vue";
+import HistorySidebar from "@/components/HistorySidebar.vue";
 
 
 const auth = authStore()
@@ -62,13 +64,17 @@ onBeforeUnmount(async () => {
       <LoginDialog />
       <RegisterDialog />
 
-      <Sidebar />
+      <HistorySidebar />
+
+      <ProfileSidebar />
 
       <Header />
 
       <VMain>
         <RouterView />
       </VMain>
+
+      <Footer />
     </VApp>
   </VResponsive>
 </template>

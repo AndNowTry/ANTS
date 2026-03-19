@@ -3,7 +3,8 @@ import { useTheme } from 'vuetify'
 import { computed } from "vue"
 import { UpdateProfile } from "@/utils/update_profile.js"
 
-import ProfileMenu from "@/components/app/sidebar/ProfileMenu.vue"
+import ProfileMenu from "@/components/ProfileMenu.vue"
+import router from "@/router/index.js";
 
 
 const theme = useTheme()
@@ -38,8 +39,8 @@ function UpdateTheme()
         class="d-flex align-center gap-3 pa-2"
         style="width: 60vw"
     >
-      <div class="d-flex justify-center">
-        <img src="@/icons/Logo.png" style="width: 46px" />
+      <div class="d-flex justify-center" @click="router.push('/')">
+        <img src="../icons/Logo.png" style="width: 46px" />
       </div>
 
       <VSpacer />

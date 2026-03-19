@@ -56,7 +56,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ("email", "username", "avatar", "level", "theme", "language")
-        read_only_fields = ("level",)
+        read_only_fields = ("level", "email")
 
     def get_avatar(self, obj):
         request = self.context.get("request")

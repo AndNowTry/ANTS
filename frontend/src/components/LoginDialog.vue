@@ -3,11 +3,11 @@ import { computed, ref } from "vue"
 import { authStore } from "@/stores/auth.js"
 import { ReadError } from "@/utils/error_reader.js"
 import axios from "@/axios/axios.js"
-
+import { useTheme } from "vuetify/framework"
 
 const auth = authStore()
-const dialog = computed(() => auth.openRegistrationDialogByUser)
-
+const dialog = computed(() => auth.openLoginDialogByUser)
+const theme = useTheme()
 
 const form = ref(false)
 const alertMessage = ref('')
@@ -18,18 +18,18 @@ const formFields = ref({
   email: {
     value: null,
   },
-  password1: {
+  password: {
     value: null,
     visible: false,
   },
-  password2: {
-    value: null,
-    visible: false,
+  keepUserLoggen: {
+    value: true,
   },
 })
 
 
-async function Register()
+
+async function Login()
 {
   if(!form.value) return
 
@@ -37,36 +37,53 @@ async function Register()
 
   try
   {
-    const response = await axios.post("/auth/register/", {
-      username: formFields.value.username.value,
+    const loginResponse = await axios.post("/auth/login/", {
       email: formFields.value.email.value,
-      password: formFields.value.password1.value,
-      password_confirm: formFields.value.password2.value,
+      password: formFields.value.password.value,
     })
 
-    if(response.status === 201 && response.data.detail)
+    if (loginResponse.data.status === "success")
     {
-      auth.OpenLoginForm()
+      const profileResponse = await axios.get("/auth/profile/")
 
-      formFields.value = {
-        username: {
-          value: null,
-        },
-        email: {
-          value: null,
-        },
-        password1: {
-          value: null,
-          visible: false,
-        },
-        password2: {
-          value: null,
-          visible: false,
-        },
+      if (profileResponse.data.status === "success")
+      {
+        auth.SaveUserInfo(
+            profileResponse.data.data.data,
+            formFields.value.keepUserLoggen.value
+        )
+
+        theme.change(auth.userInfo.theme)
+
+        formFields.value = {
+          username: {
+            value: null,
+          },
+          email: {
+            value: null,
+          },
+          password: {
+            value: null,
+            visible: false,
+          },
+          keepUserLoggen: {
+            value: false,
+          },
+        }
+        auth.CloseLoginForm()
+      }
+      else
+      {
+        const LogoutResponse = await axios.post("/auth/logout/")
+
+        if (LogoutResponse.data.status === "success")
+        {
+          auth.DeleteUserInfo()
+        }
       }
     }
   }
-  catch(error)
+  catch (error)
   {
     alertMessage.value = ReadError(error)
   }
@@ -79,12 +96,12 @@ async function Register()
       width="500"
       persistent
       no-click-animation
-      @click:outside="auth.CloseRegisterForm"
+      @click:outside="auth.CloseLoginForm"
   >
     <VCard>
       <VCardText class="d-flex flex-column gap-5">
         <div class="d-flex justify-center">
-          <img src="@/icons/Logo.png" style="width: 150px" />
+          <img src="../icons/Logo.png" style="width: 150px" />
         </div>
 
         <VAlert
@@ -99,17 +116,6 @@ async function Register()
             class="d-flex flex-column gap-3"
         >
           <VTextField
-              v-model="formFields.username.value"
-              label="Username"
-              variant="outlined"
-              density="comfortable"
-              clearable
-              :rules="[
-                value => !!value || 'Username is required',
-              ]"
-          />
-
-          <VTextField
               v-model="formFields.email.value"
               label="Email"
               type="email"
@@ -123,9 +129,9 @@ async function Register()
           />
 
           <VTextField
-              v-model="formFields.password1.value"
+              v-model="formFields.password.value"
               label="Password"
-              :type="formFields.password1.visible ? 'text' : 'password'"
+              :type="formFields.password.visible ? 'text' : 'password'"
               variant="outlined"
               density="comfortable"
               clearable
@@ -133,49 +139,36 @@ async function Register()
                 value => !!value || 'Password is required',
               ]"
               :append-inner-icon="
-                formFields.password1.visible ? 'mdi-eye' : 'mdi-eye-off'
+                formFields.password.visible ? 'mdi-eye' : 'mdi-eye-off'
               "
               @click:append-inner="
-                formFields.password1.visible = !formFields.password1.visible
-              "
-          />
-
-          <VTextField
-              v-model="formFields.password2.value"
-              label="Repeat password"
-              :type="formFields.password2.visible ? 'text' : 'password'"
-              variant="outlined"
-              density="comfortable"
-              clearable
-              :rules="[
-                value => !!value || 'Password is required',
-              ]"
-              :append-inner-icon="
-                formFields.password2.visible ? 'mdi-eye' : 'mdi-eye-off'
-              "
-              @click:append-inner="
-                formFields.password2.visible = !formFields.password2.visible
+                formFields.password.visible = !formFields.password.visible
               "
           />
 
           <div class="d-flex align-center justify-space-between mt-5">
+            <VCheckbox
+                v-model="formFields.keepUserLoggen.value"
+                label="Keep me logged in"
+            />
+
             <VBtn
                 :disabled="!form"
                 width="200"
                 color="success"
                 class="mb-5"
-                @click="Register"
+                @click="Login"
             >
-              Register
+              Login
             </VBtn>
           </div>
         </VForm>
 
         <div
             class="text-center mb-4"
-            @click="auth.OpenLoginForm"
+            @click="auth.OpenRegisterForm"
         >
-          Or login?
+          Or create a new account?
         </div>
       </VCardText>
     </VCard>
