@@ -13,6 +13,8 @@ from core.responses import success_response
 from rest_framework import status
 import tempfile
 import os
+from .models import History
+from .serializers import HistorySerializer
 
 
 r = redis.Redis(host='127.0.0.1', port=6379, db=0)
@@ -45,7 +47,7 @@ class UploadFileView(APIView):
 
         task_id = str(uuid.uuid4())
 
-        file_path = os.path.join(tempfile.gettempdir(), f"{task_id}_{file.name}")
+        file_path = os.path.join(tempfile.gettempdir(), f"{task_id}______name______{file.name}")
         with open(file_path, "wb") as f:
             for chunk in file.chunks():
                 f.write(chunk)
@@ -101,3 +103,24 @@ class FileStatusSSEView(View):
         response["Cache-Control"] = "no-cache"
         response["X-Accel-Buffering"] = "no"
         return response
+
+
+
+class HistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        history = History.objects.filter(user=request.user).order_by('-created_at')
+        serializer = HistorySerializer(history, many=True)
+        return success_response(data=serializer.data)
+
+    def post(self, request):
+        pk = request.data.get('id')
+        if pk:
+            History.objects.filter(user=request.user, id=pk).delete()
+        else:
+            History.objects.filter(user=request.user).delete()
+
+        history = History.objects.filter(user=request.user).order_by('-created_at')
+        serializer = HistorySerializer(history, many=True)
+        return success_response(data={"message": "Deleted", "data": serializer.data})

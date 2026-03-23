@@ -1,36 +1,73 @@
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue"
+import { authStore } from "@/stores/auth.js"
+import { UpdateProfile } from "@/utils/update_profile.js"
+import { ReadError } from "@/utils/error_reader.js"
 
-const isCustomizer = ref(false)
 
-const avatarSrc = ref(null)
-const fileInput = ref(null)
+const auth = authStore()
 
-const username = ref('')
 
-const openFilePicker = () => fileInput.value.click()
+const availableForUser = computed(() => {
+  return auth.userInfo?.email !== undefined ? true : false
+})
+const isSidebarOpen = ref(false)
 
-const onFileChange = (e) => {
-  const file = e.target.files[0]
+const userInfo = computed(() => {
+  return auth.userInfo
+})
+const fileInputRef = ref(null)
+
+
+
+function OpenFilePicker()
+{
+  fileInputRef.value.click()
+}
+
+function OnFileChange(event)
+{
+  const file = event.target.files[0]
   if (!file) return
-  avatarSrc.value = URL.createObjectURL(file)
+
+  try
+  {
+    UpdateProfile({ avatar: file })
+  }
+  catch(error)
+  {
+    console.error(error)
+  }
 }
 
-const resetAvatar = () => {
-  avatarSrc.value = null
-  fileInput.value.value = ''
+
+
+const newUserName = ref('')
+const openNewUserNameForm = ref(false)
+const newUserNameFormError = ref('')
+
+function UpdateUsername(username)
+{
+  newUserNameFormError.value = ''
+  try
+  {
+    UpdateProfile({ username: username })
+  }
+  catch(error)
+  {
+    newUserNameFormError.value = ReadError(error)
+  }
 }
-
-
 </script>
 
 <template>
   <VBtn
+      v-if="availableForUser"
       icon
       class="customizer-toggler rounded d-print-none me-n2"
       elevation="8"
       size="small"
-      @click="isCustomizer = !isCustomizer"
+      @click="isSidebarOpen = !isSidebarOpen"
   >
     <VIcon
         size="24"
@@ -45,7 +82,8 @@ const resetAvatar = () => {
   </VBtn>
 
   <VNavigationDrawer
-      v-model="isCustomizer"
+      v-if="availableForUser"
+      v-model="isSidebarOpen"
       location="end"
       temporary
       width="400"
@@ -59,7 +97,7 @@ const resetAvatar = () => {
             icon
             variant="tonal"
             size="38"
-            @click="isCustomizer = !isCustomizer"
+            @click="isSidebarOpen = !isSidebarOpen"
         >
           <VIcon
               size="22"
@@ -68,13 +106,13 @@ const resetAvatar = () => {
         </VBtn>
       </template>
 
-      <VCardText class="d-flex flex-column align-center gap-5">
+      <VCardText class="d-flex flex-column align-center gap-2">
         <input
-            ref="fileInput"
+            ref="fileInputRef"
             type="file"
             accept="image/*"
             style="display: none"
-            @change="onFileChange"
+            @change="OnFileChange"
         />
 
         <VHover v-slot="{ isHovering, props }">
@@ -83,11 +121,9 @@ const resetAvatar = () => {
               color="surface-variant"
               style="cursor: pointer;"
               v-bind="props"
-              @click="openFilePicker"
+              @click="OpenFilePicker"
           >
-            <VImg v-if="avatarSrc" :src="avatarSrc" cover />
-
-            <VIcon v-else icon="mdi-account" size="48" />
+            <VImg :src="'http://localhost:8000/' + userInfo.avatar" cover />
 
             <VOverlay
                 :model-value="!!isHovering"
@@ -101,34 +137,72 @@ const resetAvatar = () => {
           </VAvatar>
         </VHover>
 
-        <span
-            v-if="avatarSrc"
-            class="text-caption text-error"
-            style="cursor: pointer;"
-            @click="resetAvatar"
-        >
-          Remove photo
-        </span>
-
-        <span
-            v-else
-            class="text-caption text-medium-emphasis"
-            style="cursor: pointer;"
-            @click="openFilePicker"
-        >
-          Upload photo
-        </span>
-
         <VTextField
-            class="w-100"
-            v-model="username"
+            class="w-100 mt-8"
+            v-model="userInfo.username"
+            :readonly="true"
             label="Username"
             variant="outlined"
             density="comfortable"
-            clearable
-            :rules="[
-                value => !!value || 'Username is required',
-             ]"
+            :append-inner-icon="openNewUserNameForm ? undefined : 'mdi-pencil-outline'"
+            @click:append-inner="openNewUserNameForm = !openNewUserNameForm"
+        />
+
+        <VExpandTransition>
+          <div
+              class="w-100 d-flex flex-column gap-6"
+              v-if="openNewUserNameForm"
+          >
+            <div
+                class="d-flex align-center justify-center gap-4"
+            >
+              <VBtn
+                  :disabled="!newUserName"
+                  icon
+                  @click="UpdateUsername(newUserName)"
+              >
+                <VIcon color="success">
+                  mdi-pencil-outline
+                </VIcon>
+              </VBtn>
+
+              <VIcon size="30">
+                mdi-swap-vertical
+              </VIcon>
+
+              <VBtn
+                  icon
+                  @click="openNewUserNameForm = !openNewUserNameForm"
+              >
+                <VIcon color="error">
+                  mdi-window-close
+                </VIcon>
+              </VBtn>
+            </div>
+
+            <VTextField
+                class="w-100"
+                v-model="newUserName"
+                label="New username"
+                variant="outlined"
+                density="comfortable"
+                clearable
+                :rules="[
+                    value => !!value || 'New username is required',
+                ]"
+                :error-messages="newUserNameFormError"
+                @input="newUserNameFormError = ''"
+            />
+          </div>
+        </VExpandTransition>
+
+        <VTextField
+            class="w-100"
+            :disabled="true"
+            :model-value="userInfo.email"
+            label="Email"
+            variant="outlined"
+            density="comfortable"
         />
       </VCardText>
     </VCard>

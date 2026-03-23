@@ -5,6 +5,7 @@ import time
 from celery import shared_task
 from .engine import FileConverter
 from django.conf import settings
+from .models import History
 
 
 r = redis.Redis(host='localhost', port=6379, db=0)
@@ -31,9 +32,11 @@ def decrement_active(user_id):
 @shared_task(bind=True)
 def process_file(self, file_path, file_type_come, file_type_need, task_id, user_id=None):
     try:
+        print(f"user_id: {user_id}")
+
         set_status(task_id, "initialize", progress=0)
 
-        output_dir = settings.MEDIA_ROOT
+        output_dir = os.path.join(settings.MEDIA_ROOT, "history")
         converter = FileConverter()
         image_exts = ["png", "jpg", "jpeg", "webp"]
         video_exts = ["mp4", "mov", "avi", "mkv", "flv", "wmv"]
@@ -63,9 +66,30 @@ def process_file(self, file_path, file_type_come, file_type_need, task_id, user_
             set_status(task_id, "error", error="Unsupported conversion")
             return
 
-        set_status(task_id, "ready for done", progress=80)
+        set_status(task_id, "save in history", progress=80)
 
-        set_status(task_id, "done", progress=100, file_url=f"/media/{os.path.basename(result)}")
+        try:
+            print(f"Before create: user_id={user_id}, result={result}")
+
+            if user_id:
+                History.objects.create(
+                    user_id=user_id,
+                    original_filename=file_path.split('______name______')[1],
+                    original_file_type=file_type_come,
+                    original_file_size=os.path.getsize(file_path),
+                    new_filename=result.split('______name______')[1],
+                    new_file_type=file_type_need,
+                    new_file_size=os.path.getsize(result),
+                    new_file_path=f"/history/{os.path.basename(result)}",
+                    end_status="done",
+                )
+        except Exception as e:
+            import traceback
+            print(f"History create error: {traceback.format_exc()}")
+
+        set_status(task_id, "history updated", progress=90)
+
+        set_status(task_id, "done", progress=100, file_url=f"/media/history/{os.path.basename(result)}")
 
     except Exception as e:
         import traceback

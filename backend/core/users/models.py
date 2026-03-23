@@ -53,27 +53,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 
-class EmailVerificationToken(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="verification_tokens")
-    token = models.UUIDField(default=uuid.uuid4, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    used = models.BooleanField(default=False)
-
-    class Meta:
-        db_table = "email_verification_tokens"
-
-    def is_expired(self):
-        from django.conf import settings
-        lifetime = getattr(settings, "EMAIL_VERIFICATION_TOKEN_LIFETIME", 86400)
-        delta = timezone.now() - self.created_at
-        return delta.total_seconds() > lifetime
-
-    def __str__(self):
-        return f"VerificationToken({self.user.email})"
-
-
-
 class Profile(models.Model):
     class Level(models.TextChoices):
         USER = "user", "User"

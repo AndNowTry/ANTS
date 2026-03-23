@@ -5,10 +5,12 @@ import { authStore } from "@/stores/auth.js"
 import StepOne from "@/views/conversion/external_components/StepOne.vue"
 import StepTwo from "@/views/conversion/external_components/StepTwo.vue"
 import StepThree from "@/views/conversion/external_components/StepThree.vue"
+import axios from "@/axios/axios.js"
+import { historyStore } from "@/stores/history.js"
 
 
 const auth = authStore()
-
+const history = historyStore()
 
 const access = computed(() => auth.userInfo?.level)
 const AllQuantity = {
@@ -89,6 +91,24 @@ function reset() {
   step.value = 1
 }
 
+
+async function UpdateHistory()
+{
+  try
+  {
+    const HistoryResponse = await axios.get("/file_convert/history/")
+
+    if(HistoryResponse.data.status === "success")
+    {
+      history.UpdateAllHistory(HistoryResponse.data.data)
+    }
+  }
+  catch(error)
+  {
+    console.error(error)
+  }
+}
+
 </script>
 
 <template>
@@ -162,7 +182,7 @@ function reset() {
                   v-else-if="step === 2"
                   color="primary"
                   :disabled="items.some(i => i.status !== 'done' && i.status !== 'error')"
-                  @click="step = 3"
+                  @click="() => { step = 3; UpdateHistory()}"
               >
                 Continue
               </VBtn>

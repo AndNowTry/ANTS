@@ -16,13 +16,20 @@ const currentTheme = computed(() => {
 
 function UpdateTheme()
 {
-  if(currentTheme.value === 'dark')
+  try
   {
-    UpdateProfile({ theme: 'dark' })
+    if(currentTheme.value === 'dark')
+    {
+      UpdateProfile({ theme: 'dark' })
+    }
+    else
+    {
+      UpdateProfile({ theme: 'light' })
+    }
   }
-  else
+  catch(error)
   {
-    UpdateProfile({ theme: 'light' })
+    console.error(error)
   }
 }
 </script>

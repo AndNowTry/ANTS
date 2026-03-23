@@ -1,6 +1,7 @@
 <script setup>
 import { onBeforeUnmount, onMounted } from "vue"
 import { authStore } from "@/stores/auth.js"
+import { historyStore } from "@/stores/history.js"
 import { useTheme } from "vuetify/framework"
 import axios from "@/axios/axios.js"
 
@@ -9,12 +10,13 @@ import RegisterDialog from "@/components/RegisterDialog.vue"
 
 import Header from "@/components/Header.vue"
 import Footer from "@/components/Footer.vue"
-import ProfileSidebar from "@/components/ProfileSidebar.vue";
-import HistorySidebar from "@/components/HistorySidebar.vue";
+import ProfileSidebar from "@/components/ProfileSidebar.vue"
+import HistorySidebar from "@/components/HistorySidebar.vue"
 
 
 const auth = authStore()
 const theme = useTheme()
+const history = historyStore()
 
 
 onMounted(async () => {
@@ -22,11 +24,19 @@ onMounted(async () => {
   {
     const ProfileResponse = await axios.get("/auth/profile/")
 
-    if (ProfileResponse.data.status === "success")
+    if(ProfileResponse.data.status === "success")
     {
       auth.SaveUserInfo( ProfileResponse.data.data.data )
 
       theme.change(auth.userInfo.theme)
+    }
+
+
+    const HistoryResponse = await axios.get("/file_convert/history/")
+
+    if(HistoryResponse.data.status === "success")
+    {
+      history.UpdateAllHistory(HistoryResponse.data.data)
     }
   }
   catch(error)

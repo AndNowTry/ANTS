@@ -77,7 +77,7 @@ const currentTheme = computed(() => {
               v-bind="props"
               :to="hasAccess ? 'conversion' : undefined"
               :elevation="isHovering ? 6 : 2"
-              style="transition: box-shadow 0.2s ease"
+              style="transition: box-shadow 0.1s ease, background-color 0.2s ease, color 0.3s ease"
           >
             <VCardText class="d-flex flex-column align-center pa-8 ga-4">
               <div @click.stop="router.push('/')">

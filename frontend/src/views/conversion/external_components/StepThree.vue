@@ -26,7 +26,7 @@ async function DownloadFile(url)
   const blobUrl = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = blobUrl
-  a.download = url.split('/').pop()
+  a.download = url.split('/').pop().split('______name______').slice(1).join('_')
   a.click()
   URL.revokeObjectURL(blobUrl)
 }

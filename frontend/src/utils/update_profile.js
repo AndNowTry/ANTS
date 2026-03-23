@@ -1,23 +1,31 @@
 import axios from "@/axios/axios.js"
+import { authStore } from "@/stores/auth.js"
 
 
 export async function UpdateProfile(changes)
 {
+    const auth = authStore()
+
     try
     {
-        if(typeof changes === "object")
+        const formData = new FormData()
+
+        for (const key in changes)
         {
-            await axios.post('/auth/profile/',{
-                ...changes,
-            })
+            if (changes[key] !== null && changes[key] !== undefined)
+            {
+                formData.append(key, changes[key])
+            }
         }
-        else
-        {
-            throw new Error("Error while updating profile")
-        }
+
+        const ProfileResponse = await axios.post('/auth/profile/', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        })
+
+        auth.SaveUserInfo(ProfileResponse.data.data.data)
     }
-    catch(error)
+    catch (error)
     {
-        console.error(error)
+        throw error
     }
 }
