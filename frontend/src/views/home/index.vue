@@ -1,5 +1,4 @@
 <script setup>
-import router from "@/router/index.js";
 import { computed } from "vue"
 import { useTheme } from "vuetify/framework"
 import { authStore } from "@/stores/auth.js"
@@ -36,7 +35,7 @@ const currentTheme = computed(() => {
             elevation="2"
         >
           <VCardText class="d-flex flex-column align-center pa-8 ga-4">
-            <div @click.stop="router.push('/')">
+            <div>
               <img
                   :src="currentTheme === 'light' ? fileDashedLine : fileDashedLineWhite"
                   style="width: 160px; display: block"
@@ -75,12 +74,12 @@ const currentTheme = computed(() => {
               class="payment-card"
               rounded="lg"
               v-bind="props"
-              :to="hasAccess ? 'conversion' : undefined"
+              :to="hasAccess ? 'api-conversion' : undefined"
               :elevation="isHovering ? 6 : 2"
               style="transition: box-shadow 0.1s ease, background-color 0.2s ease, color 0.3s ease"
           >
             <VCardText class="d-flex flex-column align-center pa-8 ga-4">
-              <div @click.stop="router.push('/')">
+              <div>
                 <img
                     :src="currentTheme === 'light' ? fileWired : fileWiredWhite"
                     style="width: 160px; display: block"

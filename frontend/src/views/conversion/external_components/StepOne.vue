@@ -1,5 +1,7 @@
 <script setup>
 import { ref } from "vue"
+import { GetIcon } from "@/utils/icons.js"
+
 
 const ConversionOptions = {
   png:  ["jpg", "jpeg", "webp", "pdf"],
@@ -84,19 +86,6 @@ function FormatSize(bytes)
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " kB"
   return (bytes / (1024 * 1024)).toFixed(1) + " MB"
 }
-
-function GetIcon(file)
-{
-  if (!file) return "mdi-file"
-
-  const ext = file.name.split(".").pop().toLowerCase()
-
-  if (["png","jpg","jpeg","webp"].includes(ext)) return "mdi-image"
-  if (["mp4","mov","avi","mkv"].includes(ext)) return "mdi-video"
-  if (["mp3","wav","aac","flac"].includes(ext)) return "mdi-music"
-  if (["pdf","doc","docx","xls","xlsx","ppt","pptx"].includes(ext)) return "mdi-file-document"
-  return "mdi-file"
-}
 </script>
 
 <template>
@@ -108,7 +97,7 @@ function GetIcon(file)
           style="border-bottom: 0.5px solid rgba(0,0,0,0.1)"
       >
         <VAvatar color="secondary">
-          <VIcon :icon="GetIcon(item.file)" />
+          <VIcon :icon="GetIcon(item.file.name)" />
         </VAvatar>
 
         <div style="flex: 1; min-width: 0">

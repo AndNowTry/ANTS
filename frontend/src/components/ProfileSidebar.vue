@@ -1,12 +1,10 @@
 <script setup>
 import { computed, ref } from "vue"
 import { authStore } from "@/stores/auth.js"
-import { UpdateProfile } from "@/utils/update_profile.js"
 import { ReadError } from "@/utils/error_reader.js"
 
 
 const auth = authStore()
-
 
 const availableForUser = computed(() => {
   return auth.userInfo?.email !== undefined ? true : false
@@ -25,14 +23,14 @@ function OpenFilePicker()
   fileInputRef.value.click()
 }
 
-function OnFileChange(event)
+async function OnFileChange(event)
 {
   const file = event.target.files[0]
   if (!file) return
 
   try
   {
-    UpdateProfile({ avatar: file })
+    await auth.UpdateUserProfile({ avatar: file })
   }
   catch(error)
   {
@@ -46,12 +44,12 @@ const newUserName = ref('')
 const openNewUserNameForm = ref(false)
 const newUserNameFormError = ref('')
 
-function UpdateUsername(username)
+async function UpdateUsername(username)
 {
   newUserNameFormError.value = ''
   try
   {
-    UpdateProfile({ username: username })
+    await auth.UpdateUserProfile({ username: username })
   }
   catch(error)
   {
@@ -90,6 +88,7 @@ function UpdateUsername(username)
       elevation="2"
       touchless
       class="app-customizer"
+      app
   >
     <VCard flat>
       <template #append>

@@ -15,7 +15,7 @@ import tempfile
 import os
 from .models import History
 from .serializers import HistorySerializer
-
+from users.models import APIToken
 
 r = redis.Redis(host='127.0.0.1', port=6379, db=0)
 
@@ -73,6 +73,16 @@ class UploadFileView(APIView):
 
 class FileStatusSSEView(View):
     def get(self, request, task_id):
+        # проверяем API токен
+        auth = request.headers.get("Authorization", "")
+        if auth.startswith("Api-Token "):
+            token = auth.split(" ", 1)[1]
+            try:
+                APIToken.objects.select_related("user").get(token=token)
+            except APIToken.DoesNotExist:
+                from django.http import JsonResponse
+                return JsonResponse({"error": "Invalid token"}, status=401)
+
         last_id = int(request.headers.get("Last-Event-ID", 0))
 
         def stream():

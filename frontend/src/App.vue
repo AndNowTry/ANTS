@@ -3,7 +3,7 @@ import { onBeforeUnmount, onMounted } from "vue"
 import { authStore } from "@/stores/auth.js"
 import { historyStore } from "@/stores/history.js"
 import { useTheme } from "vuetify/framework"
-import axios from "@/axios/axios.js"
+import 'vue3-perfect-scrollbar/style.css';
 
 import LoginDialog from "@/components/LoginDialog.vue"
 import RegisterDialog from "@/components/RegisterDialog.vue"
@@ -12,6 +12,7 @@ import Header from "@/components/Header.vue"
 import Footer from "@/components/Footer.vue"
 import ProfileSidebar from "@/components/ProfileSidebar.vue"
 import HistorySidebar from "@/components/HistorySidebar.vue"
+import ToTop from "@/components/ToTop.vue"
 
 
 const auth = authStore()
@@ -22,22 +23,11 @@ const history = historyStore()
 onMounted(async () => {
   try
   {
-    const ProfileResponse = await axios.get("/auth/profile/")
+    await auth.GetUserProfile()
 
-    if(ProfileResponse.data.status === "success")
-    {
-      auth.SaveUserInfo( ProfileResponse.data.data.data )
+    theme.change(auth.userInfo.theme)
 
-      theme.change(auth.userInfo.theme)
-    }
-
-
-    const HistoryResponse = await axios.get("/file_convert/history/")
-
-    if(HistoryResponse.data.status === "success")
-    {
-      history.UpdateAllHistory(HistoryResponse.data.data)
-    }
+    await history.UpdateAllHistory()
   }
   catch(error)
   {
@@ -51,12 +41,7 @@ onBeforeUnmount(async () => {
   {
     if(!auth.keepUserLoggedIn)
     {
-      const LogoutResponse = await axios.post("/auth/logout/")
-
-      if (LogoutResponse.data.status === "success")
-      {
-        auth.DeleteUserInfo()
-      }
+      await auth.LogoutUser()
     }
   }
   catch(error)
@@ -84,9 +69,12 @@ onBeforeUnmount(async () => {
         <RouterView />
       </VMain>
 
+      <ToTop />
+
       <Footer />
     </VApp>
   </VResponsive>
 </template>
+
 
 

@@ -5,13 +5,14 @@ from .views import (
     RefreshView,
     LogoutView,
     ProfileView,
+    APITokenView,
 )
 
 urlpatterns = [
-    path('register/',             RegisterView.as_view(),             name='auth-register'),
-    path('login/',                LoginView.as_view(),                name='auth-login'),
-    path('refresh/',              RefreshView.as_view(),              name='auth-refresh'),
-    path('logout/',               LogoutView.as_view(),               name='auth-logout'),
-
-    path('profile/',              ProfileView.as_view(),              name='auth-profile'),
+    path('register/', RegisterView.as_view(), name='auth-register'),
+    path('login/', LoginView.as_view(), name='auth-login'),
+    path('refresh/', RefreshView.as_view(), name='auth-refresh'),
+    path('logout/', LogoutView.as_view(), name='auth-logout'),
+    path('profile/', ProfileView.as_view(), name='auth-profile'),
+    path('api-token/', APITokenView.as_view(), name='api-token'),
 ]

@@ -1,14 +1,7 @@
 <script setup>
-function GetIcon(file)
-{
-  if (!file) return "mdi-file"
-  const ext = file.name.split(".").pop().toLowerCase()
-  if (["png","jpg","jpeg","webp"].includes(ext)) return "mdi-image"
-  if (["mp4","mov","avi","mkv"].includes(ext)) return "mdi-video"
-  if (["mp3","wav","aac","flac"].includes(ext)) return "mdi-music"
-  if (["pdf","doc","docx","xls","xlsx","ppt","pptx"].includes(ext)) return "mdi-file-document"
-  return "mdi-file"
-}
+import { GetIcon } from "@/utils/icons.js"
+import { DownloadFile } from "@/utils/download.js"
+
 
 const props = defineProps({
   modelValue: {
@@ -18,18 +11,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['download'])
-
-async function DownloadFile(url)
-{
-  const res = await fetch('http://localhost:8000' + url)
-  const blob = await res.blob()
-  const blobUrl = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = blobUrl
-  a.download = url.split('/').pop().split('______name______').slice(1).join('_')
-  a.click()
-  URL.revokeObjectURL(blobUrl)
-}
 </script>
 
 <template>
@@ -41,7 +22,7 @@ async function DownloadFile(url)
           style="border-bottom: 0.5px solid rgba(0,0,0,0.1)"
       >
         <VAvatar color="secondary">
-          <VIcon :icon="GetIcon(item.file)" />
+          <VIcon :icon="GetIcon(item.file.name)" />
         </VAvatar>
 
         <div style="flex: 1; min-width: 0">

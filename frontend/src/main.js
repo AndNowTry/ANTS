@@ -9,6 +9,8 @@ import * as directives from 'vuetify/directives'
 import '@mdi/font/css/materialdesignicons.css'
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
+import VueHighlightJS from 'vue3-highlightjs'
+
 import './styles/vuetify/_external.css'
 
 import App from './App.vue'
@@ -37,5 +39,5 @@ const vuetify = createVuetify({
 app.use(createPinia())
 app.use(router)
 app.use(vuetify)
-
+app.use(VueHighlightJS)
 app.mount('#app')

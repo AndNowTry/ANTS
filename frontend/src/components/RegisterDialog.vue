@@ -2,7 +2,6 @@
 import { computed, ref } from "vue"
 import { authStore } from "@/stores/auth.js"
 import { ReadError } from "@/utils/error_reader.js"
-import axios from "@/axios/axios.js"
 
 
 const auth = authStore()
@@ -37,33 +36,30 @@ async function Register()
 
   try
   {
-    const response = await axios.post("/auth/register/", {
-      username: formFields.value.username.value,
-      email: formFields.value.email.value,
-      password: formFields.value.password1.value,
-      password_confirm: formFields.value.password2.value,
-    })
+    await auth.RegisterUser(
+        formFields.value.username.value,
+        formFields.value.email.value,
+        formFields.value.password1.value,
+        formFields.value.password2.value,
+    )
 
-    if(response.status === 201 && response.data.detail)
-    {
-      auth.OpenLoginForm()
+    auth.OpenLoginForm()
 
-      formFields.value = {
-        username: {
-          value: null,
-        },
-        email: {
-          value: null,
-        },
-        password1: {
-          value: null,
-          visible: false,
-        },
-        password2: {
-          value: null,
-          visible: false,
-        },
-      }
+    formFields.value = {
+      username: {
+        value: null,
+      },
+      email: {
+        value: null,
+      },
+      password1: {
+        value: null,
+        visible: false,
+      },
+      password2: {
+        value: null,
+        visible: false,
+      },
     }
   }
   catch(error)

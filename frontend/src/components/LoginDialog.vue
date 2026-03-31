@@ -2,12 +2,13 @@
 import { computed, ref } from "vue"
 import { authStore } from "@/stores/auth.js"
 import { ReadError } from "@/utils/error_reader.js"
-import axios from "@/axios/axios.js"
 import { useTheme } from "vuetify/framework"
+import { historyStore } from "@/stores/history.js"
 
 const auth = authStore()
 const dialog = computed(() => auth.openLoginDialogByUser)
 const theme = useTheme()
+const history = historyStore()
 
 const form = ref(false)
 const alertMessage = ref('')
@@ -37,53 +38,32 @@ async function Login()
 
   try
   {
-    const loginResponse = await axios.post("/auth/login/", {
-      email: formFields.value.email.value,
-      password: formFields.value.password.value,
-    })
+    await auth.LoginUser(formFields.value.email.value, formFields.value.password.value)
 
-    if (loginResponse.data.status === "success")
-    {
-      const profileResponse = await axios.get("/auth/profile/")
+    await auth.GetUserProfile()
 
-      if (profileResponse.data.status === "success")
-      {
-        auth.SaveUserInfo(
-            profileResponse.data.data.data,
-            formFields.value.keepUserLoggen.value
-        )
+    theme.change(auth.userInfo.theme)
 
-        theme.change(auth.userInfo.theme)
+    await history.UpdateAllHistory()
 
-        formFields.value = {
-          username: {
-            value: null,
-          },
-          email: {
-            value: null,
-          },
-          password: {
-            value: null,
-            visible: false,
-          },
-          keepUserLoggen: {
-            value: false,
-          },
-        }
-        auth.CloseLoginForm()
-      }
-      else
-      {
-        const LogoutResponse = await axios.post("/auth/logout/")
-
-        if (LogoutResponse.data.status === "success")
-        {
-          auth.DeleteUserInfo()
-        }
-      }
+    formFields.value = {
+      username: {
+        value: null,
+      },
+      email: {
+        value: null,
+      },
+      password: {
+        value: null,
+        visible: false,
+      },
+      keepUserLoggen: {
+        value: false,
+      },
     }
+    auth.CloseLoginForm()
   }
-  catch (error)
+  catch(error)
   {
     alertMessage.value = ReadError(error)
   }

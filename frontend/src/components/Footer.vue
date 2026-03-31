@@ -1,20 +1,18 @@
-<script setup>
-import router from "@/router/index.js";
-import ProfileMenu from "@/components/ProfileMenu.vue";
-</script>
-
 <template>
   <VFooter
       class="appbar-overlay"
-      style="max-height: 100px">
+      flat
+      style="max-height: 100px"
+      app
+  >
     <VSpacer />
 
     <VCard
-        class="d-flex align-center gap-3 pa-2"
+        class="d-flex align-center gap-3 pa-2 mt-3 mb-2"
         style="width: 60vw"
     >
       <h3 class="ma-2">
-        ANTS
+        Created by And Now @2026
       </h3>
 
     </VCard>
@@ -22,6 +20,7 @@ import ProfileMenu from "@/components/ProfileMenu.vue";
     <VSpacer />
   </VFooter>
 </template>
+
 
 <style scoped>
 .appbar-overlay

@@ -1,39 +1,21 @@
 <script setup>
-import { historyStore } from "@/stores/history.js";
+import { historyStore } from "@/stores/history.js"
 import { computed } from "vue"
-import axios from "@/axios/axios.js"
+import { GetIcon } from "@/utils/icons.js"
+import { DownloadFile } from "@/utils/download.js"
+
 
 const history = historyStore()
 
 const historyItems = computed(() => {
-  return history.history
+  return history.records
 })
-
-function GetIcon(file)
-{
-  if (!file) return "mdi-file"
-
-  const ext = file.split(".").pop().toLowerCase()
-  if (["png","jpg","jpeg","webp"].includes(ext)) return "mdi-image"
-  if (["mp4","mov","avi","mkv"].includes(ext)) return "mdi-video"
-  if (["mp3","wav","aac","flac"].includes(ext)) return "mdi-music"
-  if (["pdf","doc","docx","xls","xlsx","ppt","pptx"].includes(ext)) return "mdi-file-document"
-
-  return "mdi-file"
-}
 
 async function DeleteFileFromHistory(id)
 {
   try
   {
-    const DeleteFileHistoryResponse = await axios.post("/file_convert/history/", {
-      id: id
-    })
-
-    if(DeleteFileHistoryResponse.data.status === "success")
-    {
-      history.UpdateAllHistory(DeleteFileHistoryResponse.data.data.data)
-    }
+    await history.DeleteRecordFromHistory(id)
   }
   catch(error)
   {
@@ -41,16 +23,9 @@ async function DeleteFileFromHistory(id)
   }
 }
 
-async function DownloadFileFromHistory(url)
+function OnEnter()
 {
-  const res = await fetch('http://localhost:8000' + url)
-  const blob = await res.blob()
-  const blobUrl = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = blobUrl
-  a.download = decodeURIComponent(url.split('/').pop().split('______name______').slice(1).join('_'))
-  a.click()
-  URL.revokeObjectURL(blobUrl)
+  setTimeout(() => history.MarkAsViewedAll(), 1000)
 }
 </script>
 
@@ -64,31 +39,57 @@ async function DownloadFileFromHistory(url)
       expand-on-hover
       permanent
       rail
+      @mouseenter="OnEnter"
+      app
   >
-    <v-list density="compact" nav>
-      <v-list-item>
+    <VList density="compact" nav>
+      <VListItem>
         <template v-slot:prepend>
-          <v-badge location="top right" color="error" content="1">
-            <v-icon icon="mdi-history"></v-icon>
-          </v-badge>
-        </template>
-      </v-list-item>
+          <VBadge
+              v-if="historyItems.some(obj => obj.viewed === false)"
+              location="top right"
+              color="error"
+              :content="historyItems.filter(obj => !obj.viewed).length"
+          >
+            <VIcon icon="mdi-history" />
+          </VBadge>
 
-      <v-list-item
+          <VIcon
+              v-else
+              icon="mdi-history"
+          />
+        </template>
+      </VListItem>
+
+      <VListItem
           v-for="item in historyItems"
           :key="item"
           :value="item.id"
 
-          :prepend-icon="GetIcon(item.original_filename)"
           :title="item.original_filename"
           :subtitle="item.original_file_type + ' → ' + item.new_file_type"
       >
+        <template v-slot:prepend>
+          <VBadge
+              v-if="!item.viewed"
+              location="top right"
+              color="error"
+          >
+            <VIcon :icon="GetIcon(item.original_filename)" />
+          </VBadge>
+
+          <VIcon
+              v-else
+              :icon="GetIcon(item.original_filename)"
+          />
+        </template>
+
         <template v-slot:append>
           <VBtn
               color="success"
               icon="mdi-download"
               variant="text"
-              @click="DownloadFileFromHistory(item.new_file_path)"
+              @click="DownloadFile(item.new_file_path)"
           ></VBtn>
 
           <VBtn
@@ -98,8 +99,8 @@ async function DownloadFileFromHistory(url)
               @click="DeleteFileFromHistory(item.id)"
           ></VBtn>
         </template>
-      </v-list-item>
-    </v-list>
+      </VListItem>
+    </VList>
   </VNavigationDrawer>
 </template>
 

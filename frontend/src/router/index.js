@@ -12,7 +12,17 @@ const router = createRouter({
       path: '/conversion',
       name: 'conversion',
       component: () => import('@/views/conversion/index.vue'),
-    }
+    },
+    {
+      path: '/api-conversion',
+      name: 'api-conversion',
+      component: () => import('@/views/api-conversion/index.vue'),
+    },
+    {
+      path: '/api-conversion/documentation',
+      name: 'api-documentation',
+      component: () => import('@/views/api-documentation/index.vue'),
+    },
   ],
 })
 export default router

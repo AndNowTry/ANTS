@@ -1,18 +1,18 @@
 <script setup>
 import { useTheme } from 'vuetify'
+import { authStore } from "@/stores/auth.js"
 import { computed } from "vue"
-import { UpdateProfile } from "@/utils/update_profile.js"
-
 import ProfileMenu from "@/components/ProfileMenu.vue"
-import router from "@/router/index.js";
+import router from "@/router/index.js"
 
+
+const auth = authStore()
 
 const theme = useTheme()
-
-
 const currentTheme = computed(() => {
   return theme.global.current.value.dark ? 'dark' : 'light'
 })
+
 
 function UpdateTheme()
 {
@@ -20,11 +20,11 @@ function UpdateTheme()
   {
     if(currentTheme.value === 'dark')
     {
-      UpdateProfile({ theme: 'dark' })
+      auth.UpdateUserProfile({ theme: 'dark' })
     }
     else
     {
-      UpdateProfile({ theme: 'light' })
+      auth.UpdateUserProfile({ theme: 'light' })
     }
   }
   catch(error)
@@ -39,22 +39,49 @@ function UpdateTheme()
       class="appbar-overlay"
       flat
       height="100"
+      app
   >
     <VSpacer />
 
     <VCard
-        class="d-flex align-center gap-3 pa-2"
+        class="d-flex align-center gap-2 pa-2"
         style="width: 60vw"
     >
-      <div class="d-flex justify-center" @click="router.push('/')">
+      <div class="d-flex justify-center img-div" @click="router.push('/')">
         <img src="../icons/Logo.png" style="width: 46px" />
       </div>
 
       <VSpacer />
 
+      <VMenu
+          offset="20"
+          location="bottom end"
+      >
+        <template v-slot:activator="{ props }">
+          <VBtn
+              icon
+              v-bind="props"
+          >
+            <VIcon>
+              mdi-web
+            </VIcon>
+          </VBtn>
+        </template>
+
+        <VList width="100" class="pa-0">
+          <VListItem>
+            <VListItemTitle>Ru</VListItemTitle>
+          </VListItem>
+
+          <VListItem>
+            <VListItemTitle>En</VListItemTitle>
+          </VListItem>
+        </VList>
+      </VMenu>
+
       <VBtn
           icon
-          @click="() => {theme.toggle(); UpdateTheme()}"
+          @click="() => { theme.toggle(); UpdateTheme() }"
       >
         <VIcon>
           {{
@@ -83,5 +110,25 @@ function UpdateTheme()
 .appbar-overlay > *
 {
   pointer-events: auto;
+}
+
+.img-div
+{
+  transition: transform 0.2s ease;
+}
+
+.img-div:hover
+{
+  transform: scale(1.1);
+}
+
+.img-div:active
+{
+  transform: scale(1);
+}
+
+.v-list
+{
+  border-radius: 10px !important;
 }
 </style>

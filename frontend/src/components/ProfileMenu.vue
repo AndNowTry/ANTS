@@ -1,14 +1,12 @@
 <script setup>
 import { authStore } from "@/stores/auth.js"
 import { computed } from "vue"
-import axios from "@/axios/axios.js"
 
 const auth = authStore()
 
 const userInfo = computed(() =>
 {
   if(!auth.isUserAuthenticated) return null
-
   return auth.userInfo
 })
 
@@ -28,12 +26,7 @@ async function Logout()
 {
   try
   {
-    const LogoutResponse = await axios.post("/auth/logout/")
-
-    if (LogoutResponse.data.status === "success")
-    {
-      auth.DeleteUserInfo()
-    }
+    await auth.LogoutUser()
   }
   catch(error)
   {
@@ -54,7 +47,7 @@ async function Logout()
       </v-avatar>
     </template>
 
-    <VList width="200">
+    <VList width="200" class="pa-0">
       <VListItem>
         <template #prepend>
           <v-avatar size="32">

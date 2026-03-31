@@ -33,22 +33,24 @@ const canProceed = computed(() =>
 const eventSources = []
 
 function listenStatus(index, task_id) {
-  const es = new EventSource(`/api/file_convert/status/${task_id}/`, { withCredentials: true })
+  const es = new EventSource(`http://localhost:8000/api/file_convert/status/${task_id}/`, { withCredentials: true })
   eventSources.push(es)
+
+  es.onerror = () => {
+    es.close()
+    items.value[index].status = "error"
+    items.value[index].error = "Connection lost"
+  }
 
   es.onmessage = (event) => {
     const data = JSON.parse(event.data)
     Object.assign(items.value[index], data)
 
-    if (data.status === "done" || data.status === "error") {
+    if (data.status === "done" || data.status === "error")
+    {
       es.close()
+      return
     }
-  }
-
-  es.onerror = () => {
-    items.value[index].status = "error"
-    items.value[index].error  = "Connection lost"
-    es.close()
   }
 }
 
@@ -61,7 +63,7 @@ async function uploadItem(index) {
 
   items.value[index].status = "uploading"
 
-  const res  = await fetch("/api/file_convert/upload/", {
+  const res  = await fetch("http://localhost:8000/api/file_convert/upload/", {
     method: "POST",
     body: formData,
     credentials: "include",
@@ -96,12 +98,7 @@ async function UpdateHistory()
 {
   try
   {
-    const HistoryResponse = await axios.get("/file_convert/history/")
-
-    if(HistoryResponse.data.status === "success")
-    {
-      history.UpdateAllHistory(HistoryResponse.data.data)
-    }
+    await history.UpdateAllHistory()
   }
   catch(error)
   {

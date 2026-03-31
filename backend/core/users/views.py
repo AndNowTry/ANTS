@@ -9,6 +9,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from core.responses import success_response
 from .serializers import LoginSerializer, RegisterSerializer, ProfileSerializer
 from .cookies import set_auth_cookies, clear_auth_cookies
+from .models import APIToken
+
 
 
 class RegisterView(APIView):
@@ -23,6 +25,7 @@ class RegisterView(APIView):
             data={"message": "Registration successful."},
             status_code=status.HTTP_201_CREATED,
         )
+
 
 
 class LoginView(APIView):
@@ -42,6 +45,7 @@ class LoginView(APIView):
         )
         set_auth_cookies(response, access_token, refresh_token)
         return response
+
 
 
 class RefreshView(APIView):
@@ -71,6 +75,7 @@ class RefreshView(APIView):
         return response
 
 
+
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -85,6 +90,7 @@ class LogoutView(APIView):
         response = success_response(data={"message": "Logged out successfully"})
         clear_auth_cookies(response)
         return response
+
 
 
 class ProfileView(APIView):
@@ -114,3 +120,17 @@ class ProfileView(APIView):
                 'data': serializer.data
             }
         )
+
+
+
+class APITokenView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        token, _ = APIToken.objects.get_or_create(user=request.user)
+        return success_response(data={"token": token.token})
+
+    def delete(self, request):
+        APIToken.objects.filter(user=request.user).delete()
+        token = APIToken.objects.create(user=request.user)
+        return success_response(data={"token": token.token})

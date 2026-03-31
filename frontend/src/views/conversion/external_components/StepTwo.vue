@@ -1,16 +1,6 @@
 <script setup>
-function GetIcon(file)
-{
-  if (!file) return "mdi-file"
-  const ext = file.name.split(".").pop().toLowerCase()
+import { GetIcon } from "@/utils/icons.js"
 
-  if (["png","jpg","jpeg","webp"].includes(ext)) return "mdi-image"
-  if (["mp4","mov","avi","mkv"].includes(ext)) return "mdi-video"
-  if (["mp3","wav","aac","flac"].includes(ext)) return "mdi-music"
-  if (["pdf","doc","docx","xls","xlsx","ppt","pptx"].includes(ext)) return "mdi-file-document"
-
-  return "mdi-file"
-}
 
 const props = defineProps({
   modelValue: {
@@ -30,7 +20,7 @@ const props = defineProps({
       >
         <div class="d-flex align-center gap-3">
           <VAvatar color="secondary">
-            <VIcon :icon="GetIcon(item.file)" />
+            <VIcon :icon="GetIcon(item.file.name)" />
           </VAvatar>
 
           <div style="flex: 1; min-width: 0">
@@ -43,7 +33,6 @@ const props = defineProps({
           <VChip v-else color="secondary">{{ item.status ?? 'Waiting' }}</VChip>
         </div>
 
-        <!-- лоадер под строкой -->
         <VProgressLinear
             v-if="item.status && item.status !== 'done' && item.status !== 'error'"
             :model-value="item.progress"

@@ -3,7 +3,7 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.exceptions import TokenError
-from .models import User
+from .models import User, APIToken
 
 
 class CookieJWTAuthentication(BaseAuthentication):
@@ -38,3 +38,28 @@ class CookieJWTAuthentication(BaseAuthentication):
 
     def authenticate_header(self, request):
         return "Cookie"
+
+
+
+class APITokenAuthentication(BaseAuthentication):
+    def authenticate(self, request):
+        auth_header = request.headers.get("Authorization", "")
+        if not auth_header.startswith("Api-Token "):
+            return None
+
+        token = auth_header.split(" ", 1)[1]
+
+        try:
+            api_token = APIToken.objects.select_related("user").get(token=token)
+        except APIToken.DoesNotExist:
+            raise AuthenticationFailed("Invalid API token")
+
+        user = api_token.user
+
+        if not user.is_active:
+            raise AuthenticationFailed("User is inactive")
+
+        return user, api_token
+
+    def authenticate_header(self, request):
+        return "Api-Token"
