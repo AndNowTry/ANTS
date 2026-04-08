@@ -1,9 +1,12 @@
 <script setup>
-import { onBeforeUnmount, onMounted } from "vue"
+import { onBeforeMount, onBeforeUnmount, ref } from "vue"
 import { authStore } from "@/stores/auth.js"
 import { historyStore } from "@/stores/history.js"
-import { useTheme } from "vuetify/framework"
-import 'vue3-perfect-scrollbar/style.css';
+import { toastStore } from "@/stores/toastes.js"
+import { themeStore } from "@/stores/theme.js"
+import { languageStore } from "@/stores/language.js"
+import 'vue3-perfect-scrollbar/style.css'
+
 
 import LoginDialog from "@/components/LoginDialog.vue"
 import RegisterDialog from "@/components/RegisterDialog.vue"
@@ -16,17 +19,22 @@ import ToTop from "@/components/ToTop.vue"
 
 
 const auth = authStore()
-const theme = useTheme()
+const theme = themeStore()
+const language = languageStore()
 const history = historyStore()
+const toastes = toastStore()
 
 
-onMounted(async () => {
+const snackbarQueue = ref()
+
+
+onBeforeMount(async () => {
   try
   {
+    theme.InitTheme()
+    language.InitLanguage()
+
     await auth.GetUserProfile()
-
-    theme.change(auth.userInfo.theme)
-
     await history.UpdateAllHistory()
   }
   catch(error)
@@ -70,6 +78,13 @@ onBeforeUnmount(async () => {
       </VMain>
 
       <ToTop />
+
+      <VSnackbarQueue
+          ref="snackbarQueue"
+          v-model="toastes.messages"
+          :total-visible="3"
+          variant="outlined"
+      />
 
       <Footer />
     </VApp>

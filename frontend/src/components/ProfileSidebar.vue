@@ -1,19 +1,17 @@
 <script setup>
-import { computed, ref } from "vue"
+import { ref } from "vue"
 import { authStore } from "@/stores/auth.js"
 import { ReadError } from "@/utils/error_reader.js"
+import { useI18n } from 'vue-i18n'
+import { toastStore } from "@/stores/toastes.js"
 
 
+const toastes = toastStore()
 const auth = authStore()
+const { t } = useI18n()
 
-const availableForUser = computed(() => {
-  return auth.userInfo?.email !== undefined ? true : false
-})
-const isSidebarOpen = ref(false)
 
-const userInfo = computed(() => {
-  return auth.userInfo
-})
+
 const fileInputRef = ref(null)
 
 
@@ -31,10 +29,14 @@ async function OnFileChange(event)
   try
   {
     await auth.UpdateUserProfile({ avatar: file })
+
+    toastes.AddToast('success', 'Avatar successfully updated.', 'mdi-check')
   }
   catch(error)
   {
     console.error(error)
+
+    toastes.AddToast('error', error.message, 'mdi-alert-circle-outline')
   }
 }
 
@@ -47,25 +49,30 @@ const newUserNameFormError = ref('')
 async function UpdateUsername(username)
 {
   newUserNameFormError.value = ''
+
   try
   {
     await auth.UpdateUserProfile({ username: username })
+
+    toastes.AddToast('success', 'Username successfully updated.', 'mdi-check')
   }
   catch(error)
   {
     newUserNameFormError.value = ReadError(error)
+
+    toastes.AddToast('error', error.message, 'mdi-alert-circle-outline')
   }
 }
 </script>
 
 <template>
   <VBtn
-      v-if="availableForUser"
+      v-if="auth.info?.username"
       icon
       class="customizer-toggler rounded d-print-none me-n2"
       elevation="8"
       size="small"
-      @click="isSidebarOpen = !isSidebarOpen"
+      @click="auth.isProfileSidebarOpen = !auth.isProfileSidebarOpen"
   >
     <VIcon
         size="24"
@@ -80,8 +87,8 @@ async function UpdateUsername(username)
   </VBtn>
 
   <VNavigationDrawer
-      v-if="availableForUser"
-      v-model="isSidebarOpen"
+      v-if="auth.info?.username"
+      v-model="auth.isProfileSidebarOpen"
       location="end"
       temporary
       width="400"
@@ -89,6 +96,7 @@ async function UpdateUsername(username)
       touchless
       class="app-customizer"
       app
+      @close="auth.isProfileSidebarOpen = !auth.isProfileSidebarOpen"
   >
     <VCard flat>
       <template #append>
@@ -96,7 +104,7 @@ async function UpdateUsername(username)
             icon
             variant="tonal"
             size="38"
-            @click="isSidebarOpen = !isSidebarOpen"
+            @click="auth.isProfileSidebarOpen = !auth.isProfileSidebarOpen"
         >
           <VIcon
               size="22"
@@ -105,7 +113,7 @@ async function UpdateUsername(username)
         </VBtn>
       </template>
 
-      <VCardText class="d-flex flex-column align-center gap-2">
+      <VCardText class="d-flex flex-column align-center">
         <input
             ref="fileInputRef"
             type="file"
@@ -122,7 +130,7 @@ async function UpdateUsername(username)
               v-bind="props"
               @click="OpenFilePicker"
           >
-            <VImg :src="'http://localhost:8000/' + userInfo.avatar" cover />
+            <VImg :src="auth.avatar" cover />
 
             <VOverlay
                 :model-value="!!isHovering"
@@ -138,9 +146,9 @@ async function UpdateUsername(username)
 
         <VTextField
             class="w-100 mt-8"
-            v-model="userInfo.username"
+            v-model="auth.info.username"
             :readonly="true"
-            label="Username"
+            :label="t('Username')"
             variant="outlined"
             density="comfortable"
             :append-inner-icon="openNewUserNameForm ? undefined : 'mdi-pencil-outline'"
@@ -180,14 +188,14 @@ async function UpdateUsername(username)
             </div>
 
             <VTextField
-                class="w-100"
+                class="w-100 mb-6"
                 v-model="newUserName"
-                label="New username"
+                :label="t('New username')"
                 variant="outlined"
                 density="comfortable"
                 clearable
                 :rules="[
-                    value => !!value || 'New username is required',
+                    value => !!value || t('New username is required'),
                 ]"
                 :error-messages="newUserNameFormError"
                 @input="newUserNameFormError = ''"
@@ -198,8 +206,17 @@ async function UpdateUsername(username)
         <VTextField
             class="w-100"
             :disabled="true"
-            :model-value="userInfo.email"
-            label="Email"
+            :model-value="auth.info.email"
+            :label="t('Email')"
+            variant="outlined"
+            density="comfortable"
+        />
+
+        <VTextField
+            class="w-100"
+            :disabled="true"
+            :model-value="auth.info.level"
+            :label="t('Level')"
             variant="outlined"
             density="comfortable"
         />

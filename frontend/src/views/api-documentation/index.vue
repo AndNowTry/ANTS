@@ -1,15 +1,49 @@
 <script setup>
-import { computed } from 'vue'
-import { useTheme } from 'vuetify'
+import { computed, onMounted } from 'vue'
+import { themeStore } from "@/stores/theme.js"
+import { toastStore } from "@/stores/toastes.js"
 import 'highlight.js/styles/github.css'
 import 'highlight.js/styles/atom-one-dark.css'
 import router from "@/router/index.js"
+import { useI18n } from "vue-i18n"
+const { t } = useI18n()
 
-const theme = useTheme()
-const hljsTheme = computed(() => theme.global.current.value.dark ? 'hljs-dark' : 'hljs-light')
+
+const toastes = toastStore()
+const theme = themeStore()
+const hljsTheme = computed(() => theme.current === 'dark' ? 'hljs-dark' : 'hljs-light')
 
 
-const View = [
+async function CopyAnchor(id)
+{
+  await router.push({hash: `#${id}`})
+
+  await navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#${id}`)
+
+  toastes.AddToast('success', 'Success copied', 'mdi-check')
+}
+
+
+
+
+onMounted(() => {
+  const hash = window.location.hash
+
+  if (hash)
+  {
+    const el = document.querySelector(hash)
+
+    if(el)
+    {
+      el.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      })
+    }
+  }
+})
+
+const view = computed(() => ([
   {
     label: 'Python',
     class_name: 'python',
@@ -21,7 +55,7 @@ API_TOKEN = "your_api_token"
 BASE_URL = "http://localhost:8000"
 headers = {"Authorization": f"Api-Token {API_TOKEN}"}
 
-# загрузка файла
+#${ t('file download') }
 with open("file.png", "rb") as f:
     res = requests.post(
         f"{BASE_URL}/api/file_convert/upload/",
@@ -33,7 +67,7 @@ with open("file.png", "rb") as f:
 task_id = res.json()["data"]["task_id"]
 print(f"Task ID: {task_id}")
 
-# поллинг статуса
+#${ t('status polling') }
 while True:
     res = requests.get(
         f"{BASE_URL}/api/file_convert/status/{task_id}/",
@@ -74,7 +108,7 @@ const API_TOKEN = "your_api_token"
 const BASE_URL = "http://localhost:8000"
 
 func main() {
-    // загрузка файла
+    //${ t('file download') }
     file, _ := os.Open("file.png")
     defer file.Close()
 
@@ -98,7 +132,7 @@ func main() {
     taskID := uploadResp["data"].(map[string]interface{})["task_id"].(string)
     fmt.Println("Task ID:", taskID)
 
-    // поллинг статуса
+    //${ t('status polling') }
     req, _ = http.NewRequest("GET", BASE_URL+"/api/file_convert/status/"+taskID+"/", nil)
     req.Header.Set("Authorization", "Api-Token "+API_TOKEN)
 
@@ -134,7 +168,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
 
-        // загрузка файла
+        //${ t('file download') }
         String boundary = "----Boundary" + System.currentTimeMillis();
         byte[] fileBytes = Files.readAllBytes(Path.of("file.png"));
 
@@ -162,8 +196,8 @@ public class Main {
         HttpResponse uploadRes = client.send(uploadReq, HttpResponse.BodyHandlers.ofString());
         System.out.println("Upload response: " + uploadRes.body());
 
-        // поллинг статуса — читаем SSE построчно
-        String taskId = "extracted_task_id"; // извлеки из uploadRes.body()
+        //${ t('status polling') }
+        String taskId = "extracted_task_id";
 
         HttpRequest statusReq = HttpRequest.newBuilder()
             .uri(URI.create(BASE_URL + "/api/file_convert/status/" + taskId + "/"))
@@ -198,7 +232,7 @@ class Program
         using var client = new HttpClient();
         client.DefaultRequestHeaders.Add("Authorization", $"Api-Token {API_TOKEN}");
 
-        // загрузка файла
+        //${ t('file download') }
         using var form = new MultipartFormDataContent();
         var fileBytes = await File.ReadAllBytesAsync("file.png");
         form.Add(new ByteArrayContent(fileBytes), "file", "file.png");
@@ -211,7 +245,7 @@ class Program
         var taskId = doc.RootElement.GetProperty("data").GetProperty("task_id").GetString();
         Console.WriteLine($"Task ID: {taskId}");
 
-        // поллинг статуса
+        //${ t('status polling') }
         var stream = await client.GetStreamAsync($"{BASE_URL}/api/file_convert/status/{taskId}/");
         using var reader = new StreamReader(stream);
 
@@ -237,7 +271,7 @@ class Program
 const API_TOKEN = "your_api_token";
 const BASE_URL = "http://localhost:8000";
 
-// загрузка файла
+//${ t('file download') }
 $curl = curl_init();
 
 curl_setopt_array($curl, [
@@ -261,7 +295,7 @@ $data = json_decode($response, true);
 $taskId = $data["data"]["task_id"];
 echo "Task ID: $taskId\\n";
 
-// поллинг статуса
+//${ t('status polling') }
 $curl = curl_init();
 curl_setopt_array($curl, [
     CURLOPT_URL => BASE_URL . "/api/file_convert/status/$taskId/",
@@ -274,7 +308,7 @@ curl_setopt_array($curl, [
             $json = json_decode(substr($data, 5), true);
             print_r($json);
             if (in_array($json["status"], ["done", "error"])) {
-                return -1; // останавливаем поток
+                return -1; //${ t('thread stop') }
             }
         }
         return strlen($data);
@@ -284,7 +318,7 @@ curl_setopt_array($curl, [
 curl_exec($curl);
 curl_close($curl);`
   }
-]
+]))
 </script>
 
 
@@ -297,29 +331,46 @@ curl_close($curl);`
       <VCardTitle class="mt-2">
         <VBtn
             color="primary"
-            @click="router.push('/api-conversion')"
+            to="/api-conversion"
         >
           <VIcon class="mr-2">
             mdi-arrow-left-thin
           </VIcon>
 
-          Back to API
+          {{ t('Back to API') }}
         </VBtn>
       </VCardTitle>
 
       <VCardText>
         <template
-            v-for="obj in View"
+            v-for="obj in view"
             :key="obj.label"
         >
-          <h1>
-            {{ obj.label }}
-          </h1>
+          <VHover>
+            <template v-slot:default="{ isHovering, props }">
+              <div
+                  v-bind="props"
+                  style="margin-bottom: -40px"
+                  class="d-flex align-center gap-2"
+                  :id="obj.class_name"
+              >
+                <h1>
+                  {{ obj.label }}
+                </h1>
+
+                <h1
+                    v-if="isHovering"
+                    class="text-primary cursor-pointer"
+                    @click="CopyAnchor(obj.class_name)"
+                >
+                  #
+                </h1>
+              </div>
+            </template>
+          </VHover>
 
           <pre v-highlightjs="obj.code">
-            <code :class="[hljsTheme, obj.class_name]">
-              {{ obj.code }}
-            </code>
+            <code :class="[hljsTheme, obj.class_name]"></code>
           </pre>
         </template>
       </VCardText>

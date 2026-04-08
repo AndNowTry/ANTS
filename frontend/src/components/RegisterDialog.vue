@@ -1,16 +1,15 @@
 <script setup>
-import { computed, ref } from "vue"
+import { ref } from "vue"
 import { authStore } from "@/stores/auth.js"
 import { ReadError } from "@/utils/error_reader.js"
 
 
 const auth = authStore()
-const dialog = computed(() => auth.openRegistrationDialogByUser)
 
 
 const form = ref(false)
-const alertMessage = ref('')
 const formFields = ref({
+  alert: '',
   username: {
     value: null,
   },
@@ -31,8 +30,6 @@ const formFields = ref({
 async function Register()
 {
   if(!form.value) return
-
-  alertMessage.value = ""
 
   try
   {
@@ -64,14 +61,14 @@ async function Register()
   }
   catch(error)
   {
-    alertMessage.value = ReadError(error)
+    formFields.value.alert = ReadError(error)
   }
 }
 </script>
 
 <template>
   <VDialog
-      v-model="dialog"
+      v-model="auth.registration"
       width="500"
       persistent
       no-click-animation
@@ -84,8 +81,8 @@ async function Register()
         </div>
 
         <VAlert
-            v-if="alertMessage"
-            :text="alertMessage"
+            v-if="formFields.alert"
+            :text="formFields.alert"
             color="error"
             variant="outlined"
         />

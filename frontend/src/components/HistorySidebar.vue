@@ -1,37 +1,33 @@
 <script setup>
 import { historyStore } from "@/stores/history.js"
-import { computed } from "vue"
+import { ref } from "vue"
 import { GetIcon } from "@/utils/icons.js"
 import { DownloadFile } from "@/utils/download.js"
+import { authStore } from "@/stores/auth.js"
 
 
 const history = historyStore()
+const auth = authStore()
 
-const historyItems = computed(() => {
-  return history.records
-})
 
-async function DeleteFileFromHistory(id)
+const isHover = ref(false)
+
+
+function onLeave()
 {
-  try
-  {
-    await history.DeleteRecordFromHistory(id)
-  }
-  catch(error)
-  {
-    console.error(error)
-  }
+  isHover.value = false
 }
 
 function OnEnter()
 {
+  isHover.value = true
   setTimeout(() => history.MarkAsViewedAll(), 1000)
 }
 </script>
 
 <template>
   <VNavigationDrawer
-      temporary
+      v-if="auth.access !== 'guest'"
       width="360"
       elevation="2"
       touchless
@@ -40,16 +36,21 @@ function OnEnter()
       permanent
       rail
       @mouseenter="OnEnter"
+      @mouseleave="onLeave"
       app
   >
-    <VList density="compact" nav>
+    <VList
+        density="compact"
+        nav
+        :class="{ 'no-scroll': !isHover }"
+    >
       <VListItem>
         <template v-slot:prepend>
           <VBadge
-              v-if="historyItems.some(obj => obj.viewed === false)"
+              v-if="history.records.some(obj => obj.viewed === false)"
               location="top right"
               color="error"
-              :content="historyItems.filter(obj => !obj.viewed).length"
+              :content="history.records.filter(obj => !obj.viewed).length"
           >
             <VIcon icon="mdi-history" />
           </VBadge>
@@ -62,7 +63,7 @@ function OnEnter()
       </VListItem>
 
       <VListItem
-          v-for="item in historyItems"
+          v-for="item in history.records"
           :key="item"
           :value="item.id"
 
@@ -74,6 +75,7 @@ function OnEnter()
               v-if="!item.viewed"
               location="top right"
               color="error"
+              dot
           >
             <VIcon :icon="GetIcon(item.original_filename)" />
           </VBadge>
@@ -96,7 +98,7 @@ function OnEnter()
               color="error"
               icon="mdi-trash-can-outline"
               variant="text"
-              @click="DeleteFileFromHistory(item.id)"
+              @click="history.DeleteRecordFromHistory(item.id, true)"
           ></VBtn>
         </template>
       </VListItem>
@@ -104,3 +106,10 @@ function OnEnter()
   </VNavigationDrawer>
 </template>
 
+<style scoped>
+.no-scroll
+{
+  overflow: hidden !important;
+  height: 100vh !important;
+}
+</style>

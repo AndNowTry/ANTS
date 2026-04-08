@@ -1,7 +1,7 @@
 <script setup>
-import { computed } from "vue"
-import { useTheme } from "vuetify/framework"
 import { authStore } from "@/stores/auth.js"
+import { themeStore } from "@/stores/theme.js"
+import { useI18n } from 'vue-i18n'
 
 
 import fileWired from '@/icons/file-wired.svg'
@@ -11,41 +11,36 @@ import fileDashedLineWhite from '@/icons/file-dashed-line-white.svg'
 
 
 const auth = authStore()
-const theme = useTheme()
-
-
-const hasAccess = computed(() =>
-    ['api', 'professional'].includes(auth?.userInfo?.level)
-)
-
-const currentTheme = computed(() => {
-  return theme.global.current.value.dark ? 'dark' : 'light'
-})
+const theme = themeStore()
+const { t } = useI18n()
 </script>
 
 
 <template>
-  <div class="d-flex justify-center align-center" style="height: 100%">
+  <div
+      class="d-flex justify-center align-center"
+      style="height: 100%"
+  >
     <VRow class="pa-4" style="width: 100%; max-width: 700px;">
       <VCol cols="12" sm="6">
         <VCard
             class="payment-card"
             rounded="lg"
-            to="conversion"
             elevation="2"
+            to="/conversion"
         >
           <VCardText class="d-flex flex-column align-center pa-8 ga-4">
             <div>
               <img
-                  :src="currentTheme === 'light' ? fileDashedLine : fileDashedLineWhite"
+                  :src="theme.current === 'light' ? fileDashedLine : fileDashedLineWhite"
                   style="width: 160px; display: block"
               />
             </div>
 
             <div class="text-center">
-              <div class="text-overline text-medium-emphasis mb-1">Plan</div>
+              <div class="text-overline text-medium-emphasis mb-1">{{ t('Plan') }}</div>
 
-              <h2 class="text-h5 font-weight-bold">Conversion</h2>
+              <h2 class="text-h5 font-weight-bold">{{ t('Conversion') }}</h2>
             </div>
 
             <VDivider class="w-100" />
@@ -54,13 +49,13 @@ const currentTheme = computed(() => {
               <div class="d-flex align-center ga-3">
                 <VIcon icon="mdi-check-circle-outline" size="18" />
 
-                <span class="text-body-2">Conversion using the interface</span>
+                <span class="text-body-2">{{ t('Conversion using the interface') }}</span>
               </div>
 
               <div class="d-flex align-center ga-3">
                 <VIcon icon="mdi-check-circle-outline" size="18" />
 
-                <span class="text-body-2">Convert up to 5 files in parallel</span>
+                <span class="text-body-2">{{ t('Convert up to 5 files in parallel') }}</span>
               </div>
             </div>
 
@@ -74,22 +69,22 @@ const currentTheme = computed(() => {
               class="payment-card"
               rounded="lg"
               v-bind="props"
-              :to="hasAccess ? 'api-conversion' : undefined"
               :elevation="isHovering ? 6 : 2"
               style="transition: box-shadow 0.1s ease, background-color 0.2s ease, color 0.3s ease"
+              to="/api-conversion"
           >
             <VCardText class="d-flex flex-column align-center pa-8 ga-4">
               <div>
                 <img
-                    :src="currentTheme === 'light' ? fileWired : fileWiredWhite"
+                    :src="theme.current === 'light' ? fileWired : fileWiredWhite"
                     style="width: 160px; display: block"
                 />
               </div>
 
               <div class="text-center">
-                <div class="text-overline text-medium-emphasis mb-1">Plan</div>
+                <div class="text-overline text-medium-emphasis mb-1">{{ t('Plan') }}</div>
 
-                <h2 class="text-h5 font-weight-bold">API Conversion</h2>
+                <h2 class="text-h5 font-weight-bold">{{ t('API Conversion') }}</h2>
               </div>
 
               <VDivider class="w-100" />
@@ -98,19 +93,19 @@ const currentTheme = computed(() => {
                 <div class="d-flex align-center ga-3">
                   <VIcon icon="mdi-check-circle-outline" size="18" />
 
-                  <span class="text-body-2">Conversion using API</span>
+                  <span class="text-body-2">{{ t('Conversion using API') }}</span>
                 </div>
 
                 <div class="d-flex align-center ga-3">
                   <VIcon icon="mdi-check-circle-outline" size="18" />
 
-                  <span class="text-body-2">Convert up to 5 files in parallel</span>
+                  <span class="text-body-2">{{ t('Convert up to 5 files in parallel') }}</span>
                 </div>
               </div>
             </VCardText>
 
             <VOverlay
-                v-if="!hasAccess"
+                v-if="auth.access !== 'api'"
                 :model-value="!!isHovering"
                 class="align-center justify-center"
                 scrim="grey-darken-2"
@@ -122,7 +117,7 @@ const currentTheme = computed(() => {
 
                 <div>
                   <VBtn color="yellow" variant="flat" rounded="pill" size="small">
-                    Buy API or Professional
+                    {{ t('Buy API') }}
                   </VBtn>
                 </div>
               </div>

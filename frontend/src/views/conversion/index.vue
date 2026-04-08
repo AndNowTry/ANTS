@@ -1,12 +1,14 @@
 <script setup>
 import { ref, computed } from "vue"
 import { authStore } from "@/stores/auth.js"
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 
 import StepOne from "@/views/conversion/external_components/StepOne.vue"
 import StepTwo from "@/views/conversion/external_components/StepTwo.vue"
 import StepThree from "@/views/conversion/external_components/StepThree.vue"
-import axios from "@/axios/axios.js"
 import { historyStore } from "@/stores/history.js"
+import api from "@/axios/axios.js"
 
 
 const auth = authStore()
@@ -54,7 +56,19 @@ function listenStatus(index, task_id) {
   }
 }
 
-async function uploadItem(index) {
+async function uploadItem(index)
+{
+  try
+  {
+    await api.post("/auth/refresh/")
+  }
+  catch (e)
+  {
+    items.value[index].status = "error"
+    items.value[index].error = "Session expired"
+    return
+  }
+
   const item = items.value[index]
   const formData = new FormData()
   formData.append("file", item.file)
@@ -63,14 +77,15 @@ async function uploadItem(index) {
 
   items.value[index].status = "uploading"
 
-  const res  = await fetch("http://localhost:8000/api/file_convert/upload/", {
+  const res = await fetch("http://localhost:8000/api/file_convert/upload/", {
     method: "POST",
     body: formData,
     credentials: "include",
   })
   const { data } = await res.json()
 
-  if (res.status === 429) {
+  if (res.status === 429)
+  {
     items.value[index].status = "error"
     items.value[index].error  = data.message
     return
@@ -96,13 +111,15 @@ function reset() {
 
 async function UpdateHistory()
 {
-  try
-  {
+  try {
     await history.UpdateAllHistory()
-  }
-  catch(error)
-  {
-    console.error(error)
+  } catch (error) {
+    // если interceptor не справился — пробуем ещё раз
+    try {
+      await history.UpdateAllHistory()
+    } catch (e) {
+      console.error(e)
+    }
   }
 }
 
@@ -148,21 +165,21 @@ async function UpdateHistory()
                   v-bind="props"
                   disabled
               >
-                Back
+                {{ t('Back') }}
               </VBtn>
               <VBtn
                   v-else-if="step === 3"
                   variant="tonal"
                   @click="reset"
               >
-                Convert more
+                {{ t('Convert more') }}
               </VBtn>
               <VBtn
                   v-else
                   v-bind="props"
                   disabled
               >
-                Back
+                {{ t('Back') }}
               </VBtn>
             </template>
 
@@ -173,7 +190,7 @@ async function UpdateHistory()
                   :disabled="!canProceed"
                   @click="startConversion"
               >
-                Convert
+                {{ t('Convert') }}
               </VBtn>
               <VBtn
                   v-else-if="step === 2"
@@ -181,14 +198,14 @@ async function UpdateHistory()
                   :disabled="items.some(i => i.status !== 'done' && i.status !== 'error')"
                   @click="() => { step = 3; UpdateHistory()}"
               >
-                Continue
+                {{ t('Continue') }}
               </VBtn>
               <VBtn
                   v-else
                   v-bind="props"
                   disabled
               >
-                Next
+                {{ t('Next') }}
               </VBtn>
             </template>
 

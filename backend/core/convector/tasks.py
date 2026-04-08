@@ -69,8 +69,6 @@ def process_file(self, file_path, file_type_come, file_type_need, task_id, user_
         set_status(task_id, "save in history", progress=80)
 
         try:
-            print(f"Before create: user_id={user_id}, result={result}")
-
             if user_id:
                 History.objects.create(
                     user_id=user_id,

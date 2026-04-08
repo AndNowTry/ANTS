@@ -1,3 +1,8 @@
+<script setup>
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
+</script>
+
 <template>
   <VFooter
       class="appbar-overlay"
@@ -8,12 +13,12 @@
     <VSpacer />
 
     <VCard
-        class="d-flex align-center gap-3 pa-2 mt-3 mb-2"
+        class="d-flex align-center gap-3 pa-4 mt-3 mb-2"
         style="width: 60vw"
     >
-      <h3 class="ma-2">
-        Created by And Now @2026
-      </h3>
+      <span>
+        {{ t('Created by') }} <strong>And Now</strong> © 2026
+      </span>
 
     </VCard>
 

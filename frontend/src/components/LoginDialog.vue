@@ -1,18 +1,17 @@
 <script setup>
-import { computed, ref } from "vue"
+import { ref } from "vue"
 import { authStore } from "@/stores/auth.js"
 import { ReadError } from "@/utils/error_reader.js"
-import { useTheme } from "vuetify/framework"
 import { historyStore } from "@/stores/history.js"
 
+
 const auth = authStore()
-const dialog = computed(() => auth.openLoginDialogByUser)
-const theme = useTheme()
 const history = historyStore()
 
+
 const form = ref(false)
-const alertMessage = ref('')
 const formFields = ref({
+  alert: '',
   username: {
     value: null,
   },
@@ -34,19 +33,16 @@ async function Login()
 {
   if(!form.value) return
 
-  alertMessage.value = ""
+  formFields.value.alert = ''
 
   try
   {
     await auth.LoginUser(formFields.value.email.value, formFields.value.password.value)
-
     await auth.GetUserProfile()
-
-    theme.change(auth.userInfo.theme)
-
     await history.UpdateAllHistory()
 
     formFields.value = {
+      alert: '',
       username: {
         value: null,
       },
@@ -65,14 +61,14 @@ async function Login()
   }
   catch(error)
   {
-    alertMessage.value = ReadError(error)
+    formFields.value.alert = ReadError(error)
   }
 }
 </script>
 
 <template>
   <VDialog
-      v-model="dialog"
+      v-model="auth.login"
       width="500"
       persistent
       no-click-animation
@@ -85,8 +81,8 @@ async function Login()
         </div>
 
         <VAlert
-            v-if="alertMessage"
-            :text="alertMessage"
+            v-if="formFields.alert"
+            :text="formFields.alert"
             color="error"
             variant="outlined"
         />

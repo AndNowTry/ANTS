@@ -1,91 +1,77 @@
 <script setup>
 import { authStore } from "@/stores/auth.js"
-import { computed } from "vue"
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 
 const auth = authStore()
-
-const userInfo = computed(() =>
-{
-  if(!auth.isUserAuthenticated) return null
-  return auth.userInfo
-})
-
-const profileMenu = {
-  'Profile': {
-    icon: 'mdi-account',
-    link: '/profile',
-  },
-  'Settings': {
-    icon: 'mdi-cog',
-    link: '/settings',
-  },
-}
-
-
-async function Logout()
-{
-  try
-  {
-    await auth.LogoutUser()
-  }
-  catch(error)
-  {
-    console.error(error)
-  }
-}
 </script>
+
 
 <template>
   <VMenu
-      v-if="userInfo"
+      v-if="auth?.info?.username"
       offset="20"
       location="bottom end"
   >
     <template v-slot:activator="{ props }">
       <v-avatar v-bind="props">
-        <v-img :src="'http://localhost:8000/' + userInfo.avatar" cover></v-img>
+        <v-img :src="auth.avatar" cover></v-img>
       </v-avatar>
     </template>
 
-    <VList width="200" class="pa-0">
+    <VList
+        width="200"
+        class="pa-0"
+    >
       <VListItem>
         <template #prepend>
           <v-avatar size="32">
-            <v-img :src="'http://localhost:8000/' + userInfo.avatar" cover></v-img>
+            <v-img :src="auth.avatar" cover></v-img>
           </v-avatar>
         </template>
-        <VListItemTitle>{{ userInfo.username }}</VListItemTitle>
-        <VListItemSubtitle>{{ userInfo.email }}</VListItemSubtitle>
+        <VListItemTitle>{{ auth.info.username }}</VListItemTitle>
+        <VListItemSubtitle>{{ auth.info.email }}</VListItemSubtitle>
       </VListItem>
 
-      <VListItem
-          v-for="(value, key) in profileMenu"
-          :key="key"
-          :to="value.link"
-      >
+      <VListItem @click="auth.isProfileSidebarOpen = !auth.isProfileSidebarOpen">
         <template #prepend>
-          <VIcon size="22" :icon="value.icon" />
+          <VIcon size="22" icon="mdi-account" />
         </template>
-        <VListItemTitle>{{ key }}</VListItemTitle>
+        <VListItemTitle>{{ t('Profile') }}</VListItemTitle>
       </VListItem>
 
-      <VListItem @click="Logout">
+      <VListItem @click="auth.LogoutUser(true)">
         <template #prepend>
           <VIcon size="22" icon="mdi-logout" />
         </template>
-        <VListItemTitle>Logout</VListItemTitle>
+        <VListItemTitle>{{ t('Logout') }}</VListItemTitle>
       </VListItem>
     </VList>
   </VMenu>
 
-
-
-  <VAvatar
+  <VMenu
       v-else
-      icon="mdi-login"
-      variant="outlined"
-      @click="auth.OpenLoginForm"
-  />
+      offset="20"
+      location="bottom end"
+  >
+    <template v-slot:activator="{ props }">
+      <v-avatar v-bind="props">
+        <v-img :src="auth.avatar" cover></v-img>
+      </v-avatar>
+    </template>
+
+    <VList
+        width="200"
+        class="pa-0"
+    >
+      <VListItem @click="auth.OpenLoginForm">
+        <template #prepend>
+          <VIcon size="22" icon="mdi-login" />
+        </template>
+        <VListItemTitle>{{ t('Login') }}</VListItemTitle>
+      </VListItem>
+    </VList>
+  </VMenu>
 </template>
 
 

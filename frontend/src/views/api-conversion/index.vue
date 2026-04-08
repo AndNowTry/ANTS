@@ -1,7 +1,6 @@
 <script setup>
 import { onMounted, ref } from "vue"
 import axios from "@/axios/axios.js"
-import router from "@/router/index.js"
 
 const token = ref(null)
 const loading = ref(false)
@@ -116,7 +115,7 @@ onMounted(() => {
             icon
             size="70"
             variant="elevated"
-            @click="router.push('/api-conversion/documentation')"
+            to="/api-conversion/documentation"
         >
           <VIcon size="35">
             mdi-text-box-search

@@ -36,9 +36,8 @@ api.interceptors.response.use(
 
             if (refreshResponse.data.status === "success")
             {
-                return api(originalRequest)
+                return await api(originalRequest)
             }
-
         }
         catch (error)
         {

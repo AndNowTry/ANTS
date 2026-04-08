@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from "vue"
+import { computed, ref } from "vue"
 import axios from "@/axios/axios.js"
 
 
@@ -9,6 +9,40 @@ export const authStore = defineStore('auth', () => {
     const keepUserLoggedIn = ref(false)
     const openLoginDialogByUser = ref(false)
     const openRegistrationDialogByUser = ref(false)
+    const openProfileSidebar = ref(false)
+
+
+    const info = computed(() => {
+        return !userInfo?.value ? {} : userInfo.value
+    })
+
+    const access = computed(() => {
+        return userInfo?.value?.level ?? 'guest'
+    })
+
+    const avatar = computed(() => {
+        return userInfo?.value?.avatar ? 'http://localhost:8000/' + userInfo.value.avatar : new URL('@/icons/Unknown_person.jpg', import.meta.url).href
+    })
+
+    const registration = computed(() => {
+        return openRegistrationDialogByUser.value
+    })
+
+    const login = computed(() => {
+        return openLoginDialogByUser.value
+    })
+
+    const isProfileSidebarOpen = computed({
+        get()
+        {
+            return openProfileSidebar.value
+        },
+        set(value)
+        {
+            openProfileSidebar.value = value
+        }
+    })
+
 
     function OpenLoginForm()
     {
@@ -35,7 +69,6 @@ export const authStore = defineStore('auth', () => {
     }
 
 
-
     function SaveUserInfo(data, isNeighbour)
     {
         userInfo.value = data
@@ -52,74 +85,111 @@ export const authStore = defineStore('auth', () => {
     }
 
 
-
-    async function RegisterUser(username, email, password, password_confirmation )
+    async function RegisterUser(username, email, password, password_confirmation, exception=false)
     {
-        const response = await axios.post("/auth/register/", {
-            username: username,
-            email: email,
-            password: password,
-            password_confirm: password_confirmation,
-        })
-    }
-
-    async function LoginUser(email, password)
-    {
-        const response = await axios.post("/auth/login/", {
-            email: email,
-            password: password,
-        })
-    }
-
-    async function LogoutUser()
-    {
-        const response = await axios.post("/auth/logout/")
-
-        if (response.data.status === "success")
+        try
         {
-            DeleteUserInfo()
+            const response = await axios.post("/auth/register/", {
+                username: username,
+                email: email,
+                password: password,
+                password_confirm: password_confirmation,
+            })
+        }
+        catch(error)
+        {
+            console.error(error)
+            if(!exception) return error
         }
     }
 
-
-
-    async function GetUserProfile()
+    async function LoginUser(email, password, exception=false)
     {
-        const response = await axios.get("/auth/profile/")
-
-        if(response.data.status === "success")
+        try
         {
-            SaveUserInfo(response.data.data.data)
+            const response = await axios.post("/auth/login/", {
+                email: email,
+                password: password,
+            })
+        }
+        catch(error)
+        {
+            console.error(error)
+            if(!exception) return error
         }
     }
 
-    async function UpdateUserProfile(changes) //{ username: 'fgdfg' }
+    async function LogoutUser(exception=false)
     {
-        const formData = new FormData()
-
-        for (const key in changes)
+        try
         {
-            if (changes[key] !== null && changes[key] !== undefined)
+            const response = await axios.post("/auth/logout/")
+
+            if (response.data.status === "success")
             {
-                formData.append(key, changes[key])
+                DeleteUserInfo()
             }
         }
+        catch(error)
+        {
+            console.error(error)
+            if(!exception) return error
+        }
+    }
 
-        const response = await axios.post('/auth/profile/', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        })
+    async function GetUserProfile(exception=false)
+    {
+        try
+        {
+            const response = await axios.get("/auth/profile/")
 
-        SaveUserInfo(response.data.data.data)
+            if(response.data.status === "success")
+            {
+                SaveUserInfo(response.data.data.data)
+            }
+        }
+        catch(error)
+        {
+            console.error(error)
+            if(!exception) return error
+        }
+    }
+
+    async function UpdateUserProfile(changes, exception=false) //{ username: 'fgdfg' }
+    {
+        try
+        {
+            const formData = new FormData()
+
+            for (const key in changes)
+            {
+                if (changes[key] !== null && changes[key] !== undefined)
+                {
+                    formData.append(key, changes[key])
+                }
+            }
+
+            const response = await axios.post('/auth/profile/', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            })
+
+            SaveUserInfo(response.data.data.data)
+        }
+        catch(error)
+        {
+            console.error(error)
+            if(!exception) return error
+        }
     }
 
 
 
     return {
-        userInfo, isUserAuthenticated, keepUserLoggedIn,
-        openLoginDialogByUser, openRegistrationDialogByUser,
+        access, info, avatar, login, registration,
+        keepUserLoggedIn, isProfileSidebarOpen,
         OpenLoginForm, CloseLoginForm, OpenRegisterForm,
         CloseRegisterForm, SaveUserInfo, DeleteUserInfo,
         RegisterUser, LoginUser, LogoutUser,
-        GetUserProfile, UpdateUserProfile,
+        GetUserProfile, UpdateUserProfile
     }
 })
