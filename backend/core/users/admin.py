@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User, Profile
 
+
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
     ordering = ("email",)
@@ -18,6 +19,7 @@ class CustomUserAdmin(UserAdmin):
             "fields": ("email", "password1", "password2"),
         }),
     )
+
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):

@@ -1,7 +1,7 @@
 import os
 import redis
 import json
-import time
+import traceback
 from celery import shared_task
 from .engine import FileConverter
 from django.conf import settings
@@ -78,21 +78,19 @@ def process_file(self, file_path, file_type_come, file_type_need, task_id, user_
                     new_filename=result.split('______name______')[1],
                     new_file_type=file_type_need,
                     new_file_size=os.path.getsize(result),
-                    new_file_path=f"/history/{os.path.basename(result)}",
+                    new_file_path=f"history/{os.path.basename(result)}",
                     end_status="done",
                 )
-        except Exception as e:
-            import traceback
-            print(f"History create error: {traceback.format_exc()}")
 
-        set_status(task_id, "history updated", progress=90)
+                set_status(task_id, "history updated", progress=90)
+        except:
+            print(f"History create error: {traceback.format_exc()}")
 
         set_status(task_id, "done", progress=100, file_url=f"/media/history/{os.path.basename(result)}")
 
-    except Exception as e:
-        import traceback
+    except Exception as error:
         print(traceback.format_exc())
-        set_status(task_id, "error", error=str(e))
+        set_status(task_id, "error", error=str(error))
 
     finally:
         if user_id:

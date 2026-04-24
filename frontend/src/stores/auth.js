@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from "vue"
 import axios from "@/axios/axios.js"
+import router from "@/router/index.js"
 
 
 export const authStore = defineStore('auth', () => {
     const userInfo = ref(null)
     const isUserAuthenticated = ref(false)
-    const keepUserLoggedIn = ref(false)
+    const keepUserLoggedIn = ref(true)
     const openLoginDialogByUser = ref(false)
     const openRegistrationDialogByUser = ref(false)
     const openProfileSidebar = ref(false)
@@ -103,7 +104,7 @@ export const authStore = defineStore('auth', () => {
         }
     }
 
-    async function LoginUser(email, password, exception=false)
+    async function LoginUser(email, password, isNeighbour, exception=false)
     {
         try
         {
@@ -111,6 +112,8 @@ export const authStore = defineStore('auth', () => {
                 email: email,
                 password: password,
             })
+
+            if(isNeighbour) keepUserLoggedIn.value = isNeighbour
         }
         catch(error)
         {
@@ -128,6 +131,8 @@ export const authStore = defineStore('auth', () => {
             if (response.data.status === "success")
             {
                 DeleteUserInfo()
+
+                await router.push("/")
             }
         }
         catch(error)

@@ -2,20 +2,21 @@ import uuid
 import json
 import time
 import redis
+import tempfile
+import os
 from django.http import StreamingHttpResponse
 from django.views import View
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser
 from .tasks import process_file
-from .limits import can_user_process, increment_active
+from .limits import can_user_process, increment_active, check_file_size
 from core.responses import success_response
 from rest_framework import status
-import tempfile
-import os
 from .models import History
 from .serializers import HistorySerializer
 from users.models import APIToken
+
 
 r = redis.Redis(host='127.0.0.1', port=6379, db=0)
 
@@ -35,6 +36,8 @@ class UploadFileView(APIView):
                 status_code=status.HTTP_400_BAD_REQUEST
             )
 
+
+
         user = request.user
         is_guest = not user.is_authenticated
 
@@ -44,6 +47,15 @@ class UploadFileView(APIView):
                 data={"message": reason},
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS
             )
+
+        allowed, reason = check_file_size(user, file)
+        if not allowed:
+            return success_response(
+                data={"message": reason},
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+            )
+
+
 
         task_id = str(uuid.uuid4())
 
@@ -73,7 +85,6 @@ class UploadFileView(APIView):
 
 class FileStatusSSEView(View):
     def get(self, request, task_id):
-        # проверяем API токен
         auth = request.headers.get("Authorization", "")
         if auth.startswith("Api-Token "):
             token = auth.split(" ", 1)[1]
@@ -127,9 +138,28 @@ class HistoryView(APIView):
     def post(self, request):
         pk = request.data.get('id')
         if pk:
-            History.objects.filter(user=request.user, id=pk).delete()
+            try:
+                history = History.objects.get(id=pk, user=request.user)
+                if history.new_file_path:
+                    try:
+                        if os.path.exists(history.new_file_path.path):
+                            os.remove(history.new_file_path.path)
+                    except:
+                        pass
+                history.delete()
+            except History.DoesNotExist:
+                pass
+
         else:
-            History.objects.filter(user=request.user).delete()
+            histories = History.objects.filter(user=request.user)
+            for h in histories:
+                if getattr(h, "new_file_path", None):
+                    try:
+                        if os.path.exists(h.new_file_path.path):
+                            os.remove(h.new_file_path.path)
+                    except:
+                        pass
+            histories.delete()
 
         history = History.objects.filter(user=request.user).order_by('-created_at')
         serializer = HistorySerializer(history, many=True)

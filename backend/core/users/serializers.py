@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from .models import User, Profile
+from test_payment.models import Subscription
 
 
 class RegisterSerializer(serializers.Serializer):
@@ -50,13 +51,25 @@ class LoginSerializer(serializers.Serializer):
         return attrs
 
 
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = ("plan", "started_at", "expires_at", "is_active")
+        read_only_fields = fields
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source="user.email", read_only=True)
+    subscriptions = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
-        fields = ("email", "username", "avatar", "level", "theme", "language")
-        read_only_fields = ("level", "email")
+        fields = ("email", "username", "avatar", "level", "theme", "language", "subscriptions")
+        read_only_fields = ("email",)
+
+    def get_subscriptions(self, obj):
+        subs = obj.user.subscriptions.filter(is_active=True).order_by("-started_at")
+        return SubscriptionSerializer(subs, many=True).data
 
     def get_avatar(self, obj):
         request = self.context.get("request")

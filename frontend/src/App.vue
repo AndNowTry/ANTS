@@ -1,62 +1,54 @@
 <script setup>
-import { onBeforeMount, onBeforeUnmount, ref } from "vue"
+import { onBeforeUnmount, onMounted, ref } from "vue"
 import { authStore } from "@/stores/auth.js"
-import { historyStore } from "@/stores/history.js"
 import { toastStore } from "@/stores/toastes.js"
-import { themeStore } from "@/stores/theme.js"
-import { languageStore } from "@/stores/language.js"
 import 'vue3-perfect-scrollbar/style.css'
 
 
-import LoginDialog from "@/components/LoginDialog.vue"
-import RegisterDialog from "@/components/RegisterDialog.vue"
+import LoginDialog from "@/layout/main/LoginDialog.vue"
+import RegisterDialog from "@/layout/main/RegisterDialog.vue"
 
-import Header from "@/components/Header.vue"
-import Footer from "@/components/Footer.vue"
-import ProfileSidebar from "@/components/ProfileSidebar.vue"
-import HistorySidebar from "@/components/HistorySidebar.vue"
-import ToTop from "@/components/ToTop.vue"
+
+import Header from "@/layout/header/Header.vue"
+import Footer from "@/layout/footer/Footer.vue"
+import ProfileSidebar from "@/layout/right_sidebar/ProfileSidebar.vue"
+import AdSidebar from "@/layout/right_sidebar/AdSidebar.vue"
+import HistorySidebar from "@/layout/left_sidebar/HistorySidebar.vue"
+import ToTop from "@/layout/main/ToTop.vue"
 
 
 const auth = authStore()
-const theme = themeStore()
-const language = languageStore()
-const history = historyStore()
 const toastes = toastStore()
 
 
 const snackbarQueue = ref()
 
 
-onBeforeMount(async () => {
-  try
-  {
-    theme.InitTheme()
-    language.InitLanguage()
-
-    await auth.GetUserProfile()
-    await history.UpdateAllHistory()
-  }
-  catch(error)
-  {
-    console.error(error)
-  }
+onMounted(() => {
+  window.addEventListener('beforeunload', handleUnload)
 })
 
-
-onBeforeUnmount(async () => {
-  try
-  {
-    if(!auth.keepUserLoggedIn)
-    {
-      await auth.LogoutUser()
-    }
-  }
-  catch(error)
-  {
-    console.error(error)
-  }
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', handleUnload)
 })
+
+function handleUnload()
+{
+  if (!auth.keepUserLoggedIn)
+  {
+    const csrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1]
+
+    const blob = new Blob(
+        [JSON.stringify({})],
+        { type: 'application/json' }
+    )
+
+    navigator.sendBeacon('http://localhost:8000/api/auth/logout/', blob)
+  }
+}
 </script>
 
 
@@ -70,6 +62,8 @@ onBeforeUnmount(async () => {
       <HistorySidebar />
 
       <ProfileSidebar />
+
+      <AdSidebar />
 
       <Header />
 

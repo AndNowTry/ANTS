@@ -18,4 +18,4 @@ class History(models.Model):
         db_table = "history"
 
     def __str__(self):
-        return f"{self.user.email} - {self.original_filename}"
+        return f"{self.user.email}: {self.original_filename}"

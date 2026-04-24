@@ -22,6 +22,8 @@ INSTALLED_APPS = [
 
     'users',  # auth
     'convector',
+    'test_payment',
+    'advertising',
 ]
 
 MIDDLEWARE = [

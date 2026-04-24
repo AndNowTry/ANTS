@@ -7,56 +7,95 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: () => import('@/views/home/index.vue'),
+      name: 'Home',
+      component: () => import('@/views/Home/index.vue'),
     },
     {
       path: '/conversion',
-      name: 'conversion',
-      component: () => import('@/views/conversion/index.vue'),
+      name: 'Conversion',
+      component: () => import('@/views/UIConversion/index.vue'),
     },
     {
-      path: '/api-conversion',
-      name: 'api-conversion',
-      component: () => import('@/views/api-conversion/index.vue'),
+      path: '/api/conversion',
+      name: 'ApiConversion',
+      component: () => import('@/views/ApiConversion/index.vue'),
       meta: { access: ['api'] },
     },
     {
-      path: '/api-conversion/documentation',
-      name: 'api-documentation',
-      component: () => import('@/views/api-documentation/index.vue'),
+      path: '/api/conversion/documentation',
+      name: 'ApiDocumentation',
+      component: () => import('@/views/ApiDocumentation/index.vue'),
       meta: { access: ['api'] },
     },
     {
-      path: '/payment',
-      name: 'payment',
-      component: () => import('@/views/payment/index.vue'),
+      path: '/user-plans',
+      name: 'UserPlans',
+      component: () => import('@/views/UserPlans/index.vue'),
       meta: { access: ['user', 'professional', 'api'] },
+    },
+    {
+      path: '/payment/:plan',
+      name: 'Payment',
+      component: () => import('@/views/Payment/index.vue'),
+      meta: { access: ['user', 'professional', 'api'] },
+    },
+    {
+      path: '/404',
+      name: 'EmptyState',
+      component: () => import('@/views/EmptyState/index.vue'),
     },
   ],
 })
 
 
+
 router.beforeEach(async to => {
   const auth = authStore()
+
+  if(!router.resolve(to.path).matched.length)
+  {
+    return '/404'
+  }
 
   if(to.meta.access)
   {
     try
     {
       await auth.GetUserProfile(true)
-
-      if(to.meta.access && !to.meta.access.includes(auth.access))
+    }
+    catch (error)
+    {
+      if(error.response?.status === 401)
+      {
+        try
+        {
+          await auth.RefreshToken()
+          await auth.GetUserProfile(true)
+        }
+        catch (e)
+        {
+          auth.OpenLoginForm()
+          return '/'
+        }
+      }
+      else
       {
         return '/'
       }
-
-      return true
     }
-    catch(error)
+
+    if(auth.access === 'guest')
+    {
+      auth.OpenLoginForm()
+      return '/'
+    }
+
+    if(!to.meta.access.includes(auth.access))
     {
       return '/'
     }
+
+    return true
   }
 
   return true

@@ -1,4 +1,6 @@
+import os
 from django.conf import settings
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -10,6 +12,8 @@ from core.responses import success_response
 from .serializers import LoginSerializer, RegisterSerializer, ProfileSerializer
 from .cookies import set_auth_cookies, clear_auth_cookies
 from .models import APIToken
+from test_payment.models import Subscription
+from users.models import Profile
 
 
 
@@ -70,6 +74,22 @@ class RefreshView(APIView):
         except TokenError as e:
             raise AuthenticationFailed(str(e))
 
+        user_id = refresh.payload.get("user_id")
+        if user_id:
+            try:
+                subs = Subscription.objects.filter(user_id=user_id, is_active=True, expires_at__lt=timezone.now())
+
+                for sub in subs:
+                    sub.is_active = False
+                    sub.save(update_fields=["is_active"])
+
+                if not Subscription.objects.filter(user_id=user_id, is_active=True).exists():
+                    profile = Profile.objects.get(user_id=user_id)
+                    profile.level = "user"
+                    profile.save(update_fields=["level"])
+            except Exception:
+                pass
+
         response = success_response(data={"message": "Token refreshed"})
         set_auth_cookies(response, new_access, new_refresh)
         return response
@@ -107,6 +127,13 @@ class ProfileView(APIView):
         )
 
     def post(self, request):
+        if request.data.get('avatar') and request.user.profile.avatar:
+            try:
+                if os.path.exists(request.user.profile.avatar.path):
+                    os.remove(request.user.profile.avatar.path)
+            except Exception:
+                pass
+
         serializer = ProfileSerializer(
             request.user.profile,
             data=request.data,

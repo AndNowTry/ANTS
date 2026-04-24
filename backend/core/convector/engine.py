@@ -8,6 +8,7 @@ class FileConverter:
         self.libreoffice_path = libreoffice_path
         self.ffmpeg_path = ffmpeg_path
 
+
     def convert_image(self, input_path, output_ext, output_dir):
         img = Image.open(input_path)
         base = os.path.splitext(os.path.basename(input_path))[0]
@@ -19,6 +20,7 @@ class FileConverter:
         img.save(output_path)
         return output_path
 
+
     def convert_image_to_pdf(self, input_path, output_dir):
         img = Image.open(input_path)
         img = img.convert("RGB")
@@ -27,6 +29,7 @@ class FileConverter:
         output_path = os.path.join(output_dir, f"{base}.pdf")
         img.save(output_path, "PDF", resolution=100.0)
         return output_path
+
 
     def convert_ffmpeg(self, input_path, output_ext, output_dir):
         base = os.path.splitext(os.path.basename(input_path))[0]
@@ -44,6 +47,7 @@ class FileConverter:
             raise Exception("FFmpeg failed")
 
         return output_path
+
 
     def convert_document_to_pdf(self, input_file_path, output_dir):
         command = [
