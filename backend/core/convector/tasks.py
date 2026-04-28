@@ -43,6 +43,28 @@ def process_file(self, file_path, file_type_come, file_type_need, task_id, user_
         audio_exts = ["mp3", "wav", "aac", "flac", "ogg", "m4a"]
         doc_exts = ["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx"]
 
+        allowed = False
+
+        if file_type_come in image_exts:
+            if file_type_need in image_exts or file_type_need == "pdf":
+                allowed = True
+
+        elif file_type_come in doc_exts:
+            if file_type_need == "pdf":
+                allowed = True
+
+        elif file_type_come in video_exts:
+            if file_type_need == "mp4":
+                allowed = True
+
+        elif file_type_come in audio_exts:
+            if file_type_need == "mp3":
+                allowed = True
+
+        if not allowed:
+            set_status(task_id, "error", error="Unsupported conversion")
+            return
+
         result = None
 
         set_status(task_id, "select the required type", progress=10)

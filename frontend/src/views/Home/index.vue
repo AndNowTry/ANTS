@@ -14,6 +14,26 @@ import router from "@/router/index.js";
 const auth = authStore()
 const theme = themeStore()
 const { t } = useI18n()
+
+
+async function GoToApiConversion()
+{
+  if(!auth.info?.subscriptions?.find(obj => obj.plan === 'api'))
+  {
+    await router.push('/user-plans')
+  }
+  else if(
+      auth.info?.subscriptions?.find(obj => obj.plan === 'api')
+      && auth.access !== 'api'
+  )
+  {
+    auth.isProfileSidebarOpen = !auth.isProfileSidebarOpen
+  }
+  else
+  {
+    await router.push('/api/conversion')
+  }
+}
 </script>
 
 
@@ -38,7 +58,7 @@ const { t } = useI18n()
               <template v-slot:activator="{ props }">
                 <VIcon
                     size="26"
-                    color="primary"
+                    color="info"
                     v-bind="props"
                 >
                   mdi-information-outline
@@ -75,7 +95,7 @@ const { t } = useI18n()
               v-bind="props"
               :elevation="isHovering ? 6 : 2"
               style="transition: box-shadow 0.1s ease, background-color 0.2s ease, color 0.3s ease"
-              :to="auth.access !== 'api' ? '/user-plans' : '/api/conversion'"
+              @click="GoToApiConversion"
           >
             <VCardTitle class="pb-0 pt-4 d-flex justify-start">
               <VTooltip
@@ -85,7 +105,7 @@ const { t } = useI18n()
                 <template v-slot:activator="{ props }">
                   <VIcon
                       size="26"
-                      color="primary"
+                      color="info"
                       v-bind="props"
                   >
                     mdi-information-outline
@@ -120,12 +140,32 @@ const { t } = useI18n()
                 contained
             >
               <div class="text-center pa-4">
-                <VIcon icon="mdi-lock-outline" color="primary" size="32" class="mb-3" />
+                <VIcon
+                    icon="mdi-lock-outline"
+                    color="primary"
+                    size="32"
+                    class="mb-3"
+                />
 
-                <div>
-                  <VBtn color="primary" variant="flat" rounded="pill" size="small">
+                <div >
+                  <VBtn
+                      v-if="!auth.info.subscriptions.find(obj => obj.plan === 'api')"
+                      color="primary"
+                      variant="flat"
+                      rounded="pill"
+                      size="small"
+                  >
                     {{ t('Buy API') }}
                   </VBtn>
+
+                  <VChip
+                      v-else
+                      color="primary"
+                      label
+                      variant="flat"
+                  >
+                    {{ t('Select API level in profile') }}
+                  </VChip>
                 </div>
               </div>
             </VOverlay>

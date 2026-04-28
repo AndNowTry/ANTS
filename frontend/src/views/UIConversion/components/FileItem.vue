@@ -72,6 +72,7 @@ function DeleteFile()
           class="mt-4"
           density="comfortable"
           variant="comfortable"
+          :filter-by-type="Object.keys(ConversionOptions).map(ext => `.${ext}`).join(',')"
           :title="t('Drag or select a file')"
           @update:modelValue="OnFileSelected"
       />
@@ -87,7 +88,7 @@ function DeleteFile()
     >
       <div class="d-flex align-center gap-5">
         <VTextField
-            label="Type"
+            :label="t('Current type')"
             :model-value="GetFileType(files[0])"
             :readonly="true"
             :disabled="props.loading != null || props.download != null"
@@ -98,18 +99,19 @@ function DeleteFile()
         />
 
         <VIcon size="30">
-          mdi-swap-horizontal
+          mdi-weather-cloudy-arrow-right
         </VIcon>
 
         <VSelect
             @update:modelValue="UpdateFileType"
-            label="Need type"
+            :label="t('Need type')"
             :disabled="props.loading != null || props.download != null"
             variant="outlined"
             density="compact"
             hide-details
             width="140"
             :items="ConversionOptions[GetFileType(files[0])]"
+            :no-data-text="t('No choice')"
         />
       </div>
 
@@ -130,7 +132,7 @@ function DeleteFile()
           class="position-absolute left-0 ms-10 mt-2"
       >
         <span>
-          {{ props.loading.status }}
+          {{ props.loading.status }} - {{ props.loading.num_status }}%
         </span>
 
         <VProgressLinear
@@ -144,7 +146,7 @@ function DeleteFile()
 
       <div
           class="position-absolute top-0 left-0 ma-7"
-          style="margin-top: 80px"
+          style="margin-top: 85px"
       >
         <VChip color="primary">
           {{ FormatSize(files[0].size) }}
@@ -153,7 +155,7 @@ function DeleteFile()
 
       <div
           class="position-absolute top-0 right-0 ma-7"
-          style="margin-top: 80px"
+          style="margin-top: 85px"
       >
         <VBtn
             icon

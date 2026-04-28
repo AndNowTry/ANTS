@@ -360,7 +360,7 @@ curl_close($curl);`
 
                 <h1
                     v-if="isHovering"
-                    class="text-primary cursor-pointer"
+                    class="text-info cursor-pointer"
                     @click="CopyAnchor(obj.class_name)"
                 >
                   #

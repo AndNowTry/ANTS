@@ -146,12 +146,13 @@ async function Login()
           </div>
         </VForm>
 
-        <div
-            class="text-center mb-4"
-            @click="auth.OpenRegisterForm"
+        <a
+            href="#"
+            class="text-center text-decoration-none mb-4 link-style d-block"
+            @click.prevent="auth.OpenRegisterForm"
         >
           {{ t('Or create a new account?') }}
-        </div>
+        </a>
       </VCardText>
     </VCard>
   </VDialog>

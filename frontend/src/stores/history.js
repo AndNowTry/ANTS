@@ -1,10 +1,16 @@
 import { defineStore } from 'pinia'
 import  {computed, ref } from "vue"
 import axios from "@/axios/axios.js"
+import router from "@/router/index.js"
+
 
 
 export const historyStore = defineStore('history', () => {
     const _records = ref(JSON.parse(localStorage.getItem('history') || '[]'))
+
+    const canNewFileDeleted = computed(() => {
+        return router.currentRoute.value.path.includes('/conversion')
+    })
 
     const records = computed(() => {
         return _records.value
@@ -36,7 +42,7 @@ export const historyStore = defineStore('history', () => {
         catch(error)
         {
             console.error(error)
-            if(!exception) return error
+            if(!exception) throw error
         }
     }
 
@@ -55,7 +61,7 @@ export const historyStore = defineStore('history', () => {
         catch(error)
         {
             console.error(error)
-            if(!exception) return error
+            if(!exception) throw error
         }
     }
 
@@ -74,7 +80,7 @@ export const historyStore = defineStore('history', () => {
         catch(error)
         {
             console.error(error)
-            if(!exception) return error
+            if(!exception) throw error
         }
     }
 
@@ -102,5 +108,5 @@ export const historyStore = defineStore('history', () => {
         SaveToStorage()
     }
 
-    return { records, UpdateAllHistory, DeleteRecordFromHistory, ClearHistory, MarkAsViewed, ClearViewed, MarkAsViewedAll }
+    return { records, canNewFileDeleted, UpdateAllHistory, DeleteRecordFromHistory, ClearHistory, MarkAsViewed, ClearViewed, MarkAsViewedAll }
 })

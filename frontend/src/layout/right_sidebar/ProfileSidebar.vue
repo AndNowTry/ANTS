@@ -55,8 +55,6 @@ const filesSizeByAllDays = computed(() => {
   return size.toFixed(2)
 })
 
-
-
 const fileInputRef = ref(null)
 
 function OpenFilePicker()
@@ -84,24 +82,49 @@ async function OnFileChange(event)
 }
 
 
+
+
 const newUserName = ref('')
-const openNewUserNameForm = ref(false)
-const newUserNameFormError = ref('')
+const openEditNameForm = ref(false)
+
+const UserName = computed({
+  get()
+  {
+    return openEditNameForm.value ? newUserName.value : auth.info.username
+  },
+  set(value)
+  {
+    newUserName.value = value
+  }
+})
+
+function OpenEditNameField()
+{
+  openEditNameForm.value = true
+  newUserName.value = auth.info.username
+}
+
+function CloseEditNameField()
+{
+  openEditNameForm.value = false
+  newUserName.value = ''
+}
 
 async function UpdateUsername(username)
 {
-  newUserNameFormError.value = ''
+  if(!openEditNameForm.value) return
 
   try
   {
-    await auth.UpdateUserProfile({ username: username })
+    const response = await auth.UpdateUserProfile({ username: username })
 
     toastes.AddToast('success', t('Username successfully updated'), 'mdi-check')
+
+    openEditNameForm.value = false
+    newUserName.value = ''
   }
   catch(error)
   {
-    newUserNameFormError.value = ReadError(error)
-
     toastes.AddToast('error', error.message, 'mdi-alert-circle-outline')
   }
 }
@@ -115,12 +138,12 @@ const UserLevel = computed({
 
     const subscription = info.subscriptions?.find(s => s.plan === info.level && s.is_active)
 
-    const items = [{ title: 'user', value: 'user' }, ...(info.subscriptions ?.filter(s => s.is_active && s.plan !== 'user').map(s => ({ title: s.plan, value: s.plan })) ?? [])]
+    const items = [{ title: 'user', value: 'user' }, ...(info.subscriptions ?.filter(s => s.is_active && s.plan !== 'user').map(s => ({ title: s.plan, value: s.plan, expires_at: s.expires_at })) ?? [])]
 
     const hint = subscription?.expires_at ? t('Subscription until:') + ' ' + new Date(subscription.expires_at).toLocaleString() : undefined
 
     return {
-      current:    info.level,
+      current: info.level,
       started_at: subscription?.started_at ?? null,
       expires_at: subscription?.expires_at ?? null,
       items,
@@ -193,7 +216,7 @@ const UserLevel = computed({
         </VBtn>
       </template>
 
-      <VCardText class="d-flex flex-column align-center">
+      <VCardText class="d-flex flex-column gap-1 align-center">
         <input
             ref="fileInputRef"
             type="file"
@@ -219,69 +242,74 @@ const UserLevel = computed({
                 :opacity="0.5"
                 class="d-flex align-center justify-center"
             >
-              <VIcon icon="mdi-camera" color="white" size="28" />
+              <VIcon
+                  icon="mdi-camera"
+                  color="white"
+                  size="28"
+              />
             </VOverlay>
           </VAvatar>
         </VHover>
 
         <VTextField
             class="w-100 mt-8"
-            v-model="auth.info.username"
-            :readonly="true"
+            v-model="UserName"
+            :readonly="!openEditNameForm"
+            :error-messages="[
+              ...(openEditNameForm && newUserName === auth.info.username
+                ? [t('Identical to the previous name')]
+                : []),
+              ...(openEditNameForm && !newUserName
+                ? [t('Username is required')]
+                : [])
+            ]"
             :label="t('Username')"
             variant="outlined"
             density="comfortable"
-            :append-inner-icon="openNewUserNameForm ? undefined : 'mdi-pencil-outline'"
-            @click:append-inner="openNewUserNameForm = !openNewUserNameForm"
-        />
-
-        <VExpandTransition>
-          <div
-              class="w-100 d-flex flex-column gap-6"
-              v-if="openNewUserNameForm"
-          >
-            <div
-                class="d-flex align-center justify-center gap-4"
+        >
+          <template #append-inner>
+            <VBtn
+                v-if="!openEditNameForm"
+                variant="plain"
+                icon
+                size="34"
+                @click="OpenEditNameField"
             >
-              <VBtn
-                  :disabled="!newUserName"
-                  icon
-                  @click="UpdateUsername(newUserName)"
-              >
-                <VIcon color="success">
-                  mdi-pencil-outline
-                </VIcon>
-              </VBtn>
-
-              <VIcon size="30">
-                mdi-swap-vertical
+              <VIcon>
+                mdi-pencil
               </VIcon>
+            </VBtn>
 
-              <VBtn
-                  icon
-                  @click="openNewUserNameForm = !openNewUserNameForm"
-              >
-                <VIcon color="error">
-                  mdi-window-close
-                </VIcon>
-              </VBtn>
-            </div>
+            <VBtn
+                v-if="openEditNameForm"
+                :disabled="
+                  newUserName === auth.info.username ||
+                  newUserName === ''
+                "
+                variant="plain"
+                icon
+                size="34"
+                @click="UpdateUsername(newUserName)"
 
-            <VTextField
-                class="w-100 mb-6"
-                v-model="newUserName"
-                :label="t('New username')"
-                variant="outlined"
-                density="comfortable"
-                clearable
-                :rules="[
-                    value => !!value || t('New username is required'),
-                ]"
-                :error-messages="newUserNameFormError"
-                @input="newUserNameFormError = ''"
-            />
-          </div>
-        </VExpandTransition>
+            >
+              <VIcon color="success">
+                mdi-check
+              </VIcon>
+            </VBtn>
+
+            <VBtn
+                v-if="openEditNameForm"
+                variant="plain"
+                icon
+                size="34"
+                @click="CloseEditNameField"
+            >
+              <VIcon color="error">
+                mdi-close
+              </VIcon>
+            </VBtn>
+          </template>
+        </VTextField>
 
         <VTextField
             class="w-100"
@@ -303,7 +331,27 @@ const UserLevel = computed({
             persistent-hint
             :hint="UserLevel?.hint"
             :items="UserLevel?.items"
-        />
+        >
+          <template #item="{ props, item }">
+            <v-list-item v-bind="props">
+              <template #title>
+                <div class="d-flex align-center justify-space-between">
+                  <span>
+                    {{ item.title }}
+                  </span>
+
+                  <v-chip
+                      v-if="item?.expires_at"
+                      color="info"
+                      size="small"
+                  >
+                    {{ t('until: ') + new Date(item.expires_at).toLocaleString() }}
+                  </v-chip>
+                </div>
+              </template>
+            </v-list-item>
+          </template>
+        </VSelect>
 
         <VDivider
             style="width: 120px"
@@ -321,6 +369,7 @@ const UserLevel = computed({
                 <VIcon
                     size="16"
                     style="margin-top: -14px"
+                    color="info"
                     v-bind="props"
                 >
                   mdi-information-outline
@@ -337,7 +386,7 @@ const UserLevel = computed({
         <VPie
             :title="t('File count by day')"
             :size="240"
-            :palette="['#048BA8', '#99C24D', '#F18F01', '#FF6F61', '#6A0572', '#AB83A1', '#FFD700']"
+            :palette="['#11515e', '#a8fb00', '#ededed', '#FF6F61', '#6A0572', '#AB83A1', '#FFD700']"
             tooltip
             class="pa-3 mt-3 justify-center"
             gap="2"
@@ -359,7 +408,7 @@ const UserLevel = computed({
         <VPie
             :title="t('File size by day')"
             :size="240"
-            :palette="['#6A0572', '#AB83A1', '#F18F01', '#FFD700', '#048BA8', '#99C24D']"
+            :palette="['#b66dfb', '#ffffff', '#f49100', '#ff0000', '#048BA8', '#99C24D']"
             tooltip
             class="pa-3 mt-3 justify-center"
             gap="2"

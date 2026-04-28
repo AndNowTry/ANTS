@@ -19,7 +19,7 @@ const { t } = useI18n()
       >
         <VBadge
             location="bottom right"
-            color="primary"
+            color="info"
             :content="t(language.current)"
         >
           <VIcon>

@@ -22,7 +22,7 @@ export const authStore = defineStore('auth', () => {
     })
 
     const avatar = computed(() => {
-        return userInfo?.value?.avatar ? 'http://localhost:8000/' + userInfo.value.avatar : new URL('@/icons/Unknown_person.jpg', import.meta.url).href
+        return userInfo?.value?.avatar ? 'http://localhost:8000/' + userInfo.value.avatar : new URL('@/icons/UnknownPerson.jpg', import.meta.url).href
     })
 
     const registration = computed(() => {
@@ -100,7 +100,7 @@ export const authStore = defineStore('auth', () => {
         catch(error)
         {
             console.error(error)
-            if(!exception) return error
+            if(!exception) throw error
         }
     }
 
@@ -118,7 +118,7 @@ export const authStore = defineStore('auth', () => {
         catch(error)
         {
             console.error(error)
-            if(!exception) return error
+            if(!exception) throw error
         }
     }
 
@@ -138,7 +138,7 @@ export const authStore = defineStore('auth', () => {
         catch(error)
         {
             console.error(error)
-            if(!exception) return error
+            if(!exception) throw error
         }
     }
 
@@ -156,7 +156,7 @@ export const authStore = defineStore('auth', () => {
         catch(error)
         {
             console.error(error)
-            if(!exception) return error
+            if(!exception) throw error
         }
     }
 
@@ -183,7 +183,7 @@ export const authStore = defineStore('auth', () => {
         catch(error)
         {
             console.error(error)
-            if(!exception) return error
+            if(!exception) throw error
         }
     }
 

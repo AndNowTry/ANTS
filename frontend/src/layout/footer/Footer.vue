@@ -29,7 +29,7 @@ const { t } = useI18n()
           href="https://github.com/AndNowTry/ANTS"
           target="_blank"
       >
-        <VIcon>
+        <VIcon color="info">
           mdi-github
         </VIcon>
       </VBtn>

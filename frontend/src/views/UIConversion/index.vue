@@ -10,6 +10,7 @@ import api from "@/axios/axios.js"
 import router from "@/router/index.js"
 
 
+
 const { t } = useI18n()
 const auth = authStore()
 const history = historyStore()
@@ -54,7 +55,7 @@ function listenStatus(filename, task_id)
     loading.value = {
       ...loading.value,
       [filename]: {
-        status:     data.status,
+        status: data.status,
         num_status: data.progress ?? 0,
       }
     }
@@ -97,7 +98,7 @@ async function uploadFile(file)
   }
   catch
   {
-    return
+    console.log('error when refresh')
   }
 
   const formData = new FormData()
@@ -178,9 +179,9 @@ async function GoToPayment()
     <VCard width="800">
       <VCardTitle class="pt-4 d-flex gap-4">
         <VChip
-            v-if="auth.access === 'professional'"
+            v-if="auth.info?.subscriptions?.find(obj => obj.plan === 'professional')"
             label
-            color="warning"
+            color="info"
         >
           {{ t('Maximum files') + ': ' + maxFiles }}
         </VChip>
@@ -193,7 +194,7 @@ async function GoToPayment()
         >
           <VChip
               label
-              color="warning"
+              color="info"
           >
             {{ t('Maximum files') + ': ' + maxFiles }}
           </VChip>
@@ -201,9 +202,9 @@ async function GoToPayment()
 
 
         <VChip
-            v-if="auth.access === 'professional'"
+            v-if="auth.info?.subscriptions?.find(obj => obj.plan === 'professional')"
             label
-            color="warning"
+            color="info"
         >
           {{ t('Max file size') + ': ' + FormatSize(fileSizeLimit) }}
         </VChip>
@@ -216,11 +217,25 @@ async function GoToPayment()
         >
           <VChip
               label
-              color="warning"
+              color="info"
           >
             {{ t('Max file size') + ': ' + FormatSize(fileSizeLimit) }}
           </VChip>
         </VBadge>
+
+        <VSpacer />
+
+        <VChip
+            v-if="auth.access === 'professional'"
+            label
+            color="yellow-accent-2"
+        >
+          <VIcon class="mr-1">
+            mdi-account-arrow-up-outline
+          </VIcon>
+
+          pro
+        </VChip>
       </VCardTitle>
 
       <VCardText class="pt-4">

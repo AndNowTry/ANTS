@@ -105,7 +105,7 @@ onMounted(() => {
       <VCardTitle class="mt-2">
         <VChip
             v-if="hint"
-            color="primary"
+            color="info"
         >
           {{ hint }}
         </VChip>
@@ -128,7 +128,7 @@ onMounted(() => {
             variant="outlined"
             density="comfortable"
             persistent-hint
-            :hint="t('Add it to the Authorization header: Api-Token <your_token>')"
+            :hint="t('Add it to the Authorization header: Api-Token (your_token)')"
         >
           <template v-slot:append-inner>
             <VBtn
@@ -153,6 +153,7 @@ onMounted(() => {
 
         <VBtn
             variant="tonal"
+            color="info"
             to="/api/conversion/documentation"
         >
           {{ t('Documentation') }}

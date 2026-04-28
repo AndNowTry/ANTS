@@ -195,9 +195,9 @@ async function pay()
             {{ t('Payment by ') }} СБП
           </div>
 
-          <div class="text-caption">
+          <VChip color="info">
             {{ t('In plans') }}
-          </div>
+          </VChip>
         </div>
 
         <div
@@ -212,17 +212,16 @@ async function pay()
             QIWI
           </div>
 
-          <div class="text-caption">
+          <VChip color="info">
             {{ t('In plans') }}
-          </div>
+          </VChip>
         </div>
       </VCardText>
 
       <VCardActions>
         <VBtn
             to="/user-plans"
-            color="primary"
-            variant="flat"
+            variant="tonal"
         >
           {{ t('Back to options') }}
         </VBtn>
@@ -239,7 +238,6 @@ async function pay()
           {{ t('Pay') }}
         </VBtn>
       </VCardActions>
-
     </VCard>
   </div>
 </template>

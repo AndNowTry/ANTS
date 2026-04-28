@@ -166,12 +166,13 @@ async function Register()
           </div>
         </VForm>
 
-        <div
-            class="text-center mb-4"
-            @click="auth.OpenLoginForm"
+        <a
+            href="#"
+            class="text-center text-decoration-none mb-4 link-style d-block"
+            @click.prevent="auth.OpenLoginForm"
         >
           {{ t('Or login?') }}
-        </div>
+        </a>
       </VCardText>
     </VCard>
   </VDialog>

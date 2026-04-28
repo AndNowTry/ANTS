@@ -48,7 +48,7 @@ function OnEnter()
           <VBadge
               v-if="history.records.some(obj => obj.viewed === false)"
               location="top right"
-              color="error"
+              color="info"
               :content="history.records.filter(obj => !obj.viewed).length"
           >
             <VIcon icon="mdi-history" />
@@ -74,7 +74,7 @@ function OnEnter()
           <VBadge
               v-if="!item.viewed"
               location="top right"
-              color="error"
+              color="info"
               dot
           >
             <VIcon :icon="GetIcon(item.original_filename)" />
@@ -90,14 +90,15 @@ function OnEnter()
           <VBtn
               color="success"
               icon="mdi-download"
-              variant="text"
+              variant="plain"
               @click="DownloadFile(item.new_file_path)"
           ></VBtn>
 
           <VBtn
               color="error"
               icon="mdi-trash-can-outline"
-              variant="text"
+              variant="plain"
+              :disabled="history.canNewFileDeleted"
               @click="history.DeleteRecordFromHistory(item.id, true)"
           ></VBtn>
         </template>

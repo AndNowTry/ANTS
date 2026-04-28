@@ -55,7 +55,7 @@ export const languageStore = defineStore('language', () => {
         catch (error)
         {
             console.error(error)
-            if (exception) return error
+            if (exception) throw error
         }
     }
 

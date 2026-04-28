@@ -55,7 +55,7 @@ export const themeStore = defineStore('theme', () => {
         catch (error)
         {
             console.error(error)
-            if (!exception) return error
+            if (!exception) throw error
         }
     }
 

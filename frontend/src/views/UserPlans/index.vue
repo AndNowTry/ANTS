@@ -68,7 +68,7 @@ const userPlans = computed(() => [
           <VHover v-slot="{ isHovering, props }">
             <VCard
                 v-bind="props"
-                :disabled="auth.access === option.value"
+                :disabled="auth.info.subscriptions.find(obj => obj.plan === option.value)"
                 class="payment-card border"
                 rounded="lg"
                 elevation="2"
@@ -104,7 +104,7 @@ const userPlans = computed(() => [
                   <div class="d-flex align-center ga-3">
                     <VIcon
                         icon="mdi-check-circle-outline"
-                        :color="isHovering ? 'success' : undefined"
+                        :color="isHovering ? 'success' : 'info'"
                         size="18"
                     />
 

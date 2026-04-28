@@ -106,12 +106,14 @@ function GetDownloadForFile(file)
       multiple
       density="compact"
       variant="compact"
+      :filter-by-type="Object.keys(ConversionOptions).map(ext => `.${ext}`).join(',')"
       @update:modelValue="OnFilesSelected"
   >
     <template #default>
       <VFileUploadDropzone
           v-if="files.length < (maxSize ?? 6) && !loading && !download"
           density="compact"
+          :filter-by-type="Object.keys(ConversionOptions).map(ext => `.${ext}`).join(',')"
           :title="t('Drag or select a files')"
       />
 
@@ -149,14 +151,41 @@ function GetDownloadForFile(file)
                   />
 
                   <VProgressCircular
-                      v-if="GetLoadingForFile(file)"
+                      v-if="
+                        GetLoadingForFile(file)
+                        && GetLoadingForFile(file)?.status !== 'error'
+                      "
                       :model-value="GetLoadingForFile(file).num_status"
                       :size="36"
                       :width="3"
                       color="primary"
                   >
-                    <span style="font-size: 8px">{{ GetLoadingForFile(file).num_status }}%</span>
+                    <span style="font-size: 8px">
+                      {{ GetLoadingForFile(file).num_status }}%
+                    </span>
                   </VProgressCircular>
+
+                  <VBtn
+                      v-if="
+                        GetLoadingForFile(file)
+                        && GetLoadingForFile(file)?.status === 'error'
+                      "
+                      icon
+                      size="small"
+                      variant="tonal"
+                      color="error"
+                  >
+                    <VIcon size="18">
+                      mdi-alert-circle-outline
+                    </VIcon>
+
+                    <VTooltip
+                        activator="parent"
+                        location="bottom"
+                    >
+                      {{ t('Error') }}
+                    </VTooltip>
+                  </VBtn>
 
                   <VBtn
                       v-if="GetDownloadForFile(file)"
@@ -166,8 +195,14 @@ function GetDownloadForFile(file)
                       color="success"
                       @click="DownloadFile(GetDownloadForFile(file).url)"
                   >
-                    <VIcon size="18">mdi-download</VIcon>
-                    <VTooltip activator="parent" location="bottom">
+                    <VIcon size="18">
+                      mdi-download
+                    </VIcon>
+
+                    <VTooltip
+                        activator="parent"
+                        location="bottom"
+                    >
                       {{ t('Download') }}
                     </VTooltip>
                   </VBtn>
@@ -180,7 +215,9 @@ function GetDownloadForFile(file)
                       :disabled="!!GetLoadingForFile(file) || !!GetDownloadForFile(file)"
                       @click="RemoveFile(index)"
                   >
-                    <VIcon size="18">mdi-close</VIcon>
+                    <VIcon size="18">
+                      mdi-close
+                    </VIcon>
                   </VBtn>
                 </div>
               </template>
