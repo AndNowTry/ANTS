@@ -68,7 +68,7 @@ const userPlans = computed(() => [
           <VHover v-slot="{ isHovering, props }">
             <VCard
                 v-bind="props"
-                :disabled="auth.info.subscriptions.find(obj => obj.plan === option.value)"
+                :disabled="!!auth.info.subscriptions.find(obj => obj.plan === option.value)"
                 class="payment-card border"
                 rounded="lg"
                 elevation="2"

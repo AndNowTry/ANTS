@@ -1,0 +1,65 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    container_name: django_backend
+    volumes:
+      - ./backend:/app
+      - shared_tmp:/tmp
+    working_dir: /app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=dev-secret
+      - ALLOWED_HOSTS=*
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+      - JWT_COOKIE_SECURE=False
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DJANGO_SETTINGS_MODULE=core.settings
+    depends_on:
+      - redis
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: vue_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    working_dir: /app
+    command: npm run dev -- --host
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+
+  celery:
+    build: ./backend
+    container_name: celery_worker
+    working_dir: /app/core
+    command: celery -A core worker -l info --pool=threads --concurrency=4 -Q celery,guest_queue,user_queue
+    volumes:
+      - ./backend:/app
+      - shared_tmp:/tmp
+    environment:
+      - PYTHONPATH=/app/core
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - SECRET_KEY=dev-secret
+      - DEBUG=True
+      - DJANGO_SETTINGS_MODULE=core.settings
+    depends_on:
+      - redis
+      - backend
+
+volumes:
+  shared_tmp:

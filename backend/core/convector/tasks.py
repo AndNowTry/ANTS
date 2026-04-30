@@ -8,7 +8,12 @@ from django.conf import settings
 from .models import History
 
 
-r = redis.Redis(host='localhost', port=6379, db=0)
+r = redis.Redis(
+    host=os.getenv("REDIS_HOST", "redis"),
+    port=int(os.getenv("REDIS_PORT", 6379)),
+    db=0,
+    decode_responses=True
+)
 
 
 def set_status(task_id, status, progress=0, file_url=None, error=None):
@@ -33,6 +38,9 @@ def decrement_active(user_id):
 def process_file(self, file_path, file_type_come, file_type_need, task_id, user_id=None):
     try:
         print(f"user_id: {user_id}")
+
+        print("CELERY TASK ID:", self.request.id)
+        print("CUSTOM TASK ID:", task_id)
 
         set_status(task_id, "initialize", progress=0)
 

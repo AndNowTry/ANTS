@@ -3,7 +3,6 @@ export const ConversionOptions = {
     jpg:  ["png", "jpeg", "webp", "pdf"],
     jpeg: ["png", "jpg",  "webp", "pdf"],
     webp: ["png", "jpg",  "jpeg", "pdf"],
-    pdf:  [],
     doc:  ["pdf"],
     docx: ["pdf"],
     xls:  ["pdf"],

@@ -128,11 +128,12 @@ class ProfileView(APIView):
 
     def post(self, request):
         if request.data.get('avatar') and request.user.profile.avatar:
-            try:
-                if os.path.exists(request.user.profile.avatar.path):
-                    os.remove(request.user.profile.avatar.path)
-            except Exception:
-                pass
+            if 'default.jpg' not in request.user.profile.avatar.path:
+                try:
+                    if os.path.exists(request.user.profile.avatar.path):
+                        os.remove(request.user.profile.avatar.path)
+                except Exception:
+                    pass
 
         serializer = ProfileSerializer(
             request.user.profile,

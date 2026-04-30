@@ -4,10 +4,9 @@ from PIL import Image
 
 
 class FileConverter:
-    def __init__(self, libreoffice_path=r"D:\Instruments\program\soffice.exe", ffmpeg_path=r"D:\Instruments\ffmpeg-8.0.1\bin\ffmpeg.exe"):
-        self.libreoffice_path = libreoffice_path
-        self.ffmpeg_path = ffmpeg_path
-
+    def __init__(self):
+        self.libreoffice_path = os.environ.get("LIBREOFFICE_PATH", "soffice")
+        self.ffmpeg_path = os.environ.get("FFMPEG_PATH", "ffmpeg")
 
     def convert_image(self, input_path, output_ext, output_dir):
         img = Image.open(input_path)
