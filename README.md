@@ -6,7 +6,7 @@
 
 В наличие имеются:
 - Уровни юзеров, а также варианты их использования в проекте и тестовой системы оплаты.
-  | Возможность | Гость | User | Professional | API |
+  | Возможность | Guest | User | Professional | API |
   |:---|:---:|:---:|:---:|:---:|
   | Макс. файлов за раз | 1 | 1 | 6 | 1 |
   | Макс. размер файла | 100 MB | 250 MB | 500 MB | 250 MB |
@@ -46,6 +46,15 @@ and a control UI for ease of use in the web-space.
 
 The following features are available:
 - User levels, as well as options for their use in the project and a test payment system.
+  | Feature | Guest | User | Professional | API |
+  |:---|:---:|:---:|:---:|:---:|
+  | Max. files times | 1 | 1 | 6 | 1 |
+  | Max. file size | 100 MB | 250 MB | 500 MB | 250 MB |
+  | Queue | General | Priority | Priority | Priority |
+  | Parallel processing | ❌ | ❌ | ✅ | ❌ |
+  | Conversion history | ❌ | ✅ | ✅ | ✅ |
+  | API access | ❌ | ❌ | ✅ | ✅ |
+  | Subscription | ❌ | ✅ | ✅ | ✅ |
 - Conversion via API with API key support. Integration examples in Python, Go, Java, C#, and PHP with status polling via SSE.
 - Conversion via web-interface.
 
@@ -56,3 +65,10 @@ The following features are available:
 - Task queue: Celery + Redis
 - Conversion: LibreOffice, FFmpeg, Pillow
 - Authentication: JWT (httpOnly cookies)
+
+## Run locally
+- Clone repositories
+- Run Docker Desktop
+- docker-compose --build
+- Apply migration
+- Create superuser
