@@ -33,6 +33,10 @@
 - Применить миграции
 - Создать суперпользователя
 
+# Использование
+- Сайт: http://localhost:5173
+- Админка: http://localhost:8000/admin
+
 
 
 
@@ -72,3 +76,8 @@ The following features are available:
 - docker-compose --build
 - Apply migration
 - Create superuser
+
+# Usage
+- Website: http://localhost:5173
+- Admin: http://localhost:8000/admin
+
